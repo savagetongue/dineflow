@@ -7,7 +7,7 @@ import {
 } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { api } from "@/lib/api-client";
-import { AlertCircle, Users, UserPlus, DollarSign, MessageSquareWarning } from "lucide-react";
+import { AlertCircle, Users, UserPlus, DollarSign, Utensils } from "lucide-react";
 interface ManagerStats {
   totalStudents: number;
   pendingRequests: number;
@@ -80,7 +80,7 @@ export function DashboardPage() {
         <StatCard
           title="Active Complaints"
           value={stats.activeComplaints.toString()}
-          icon={MessageSquareWarning}
+          icon={Utensils}
           description="Pending or in-progress"
         />
       </div>

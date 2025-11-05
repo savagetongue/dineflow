@@ -5,31 +5,51 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import {
   createBrowserRouter,
+  Navigate,
   RouterProvider,
 } from "react-router-dom";
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { RouteErrorBoundary } from '@/components/RouteErrorBoundary';
 import '@/index.css'
 import { HomePage } from '@/pages/HomePage'
+// Student imports
 import { StudentLayout } from '@/components/layout/StudentLayout';
-import { DashboardPage } from '@/pages/student/DashboardPage';
-import { MenuPage } from '@/pages/student/MenuPage';
-import { BillingPage } from '@/pages/student/BillingPage';
-import { ComplaintsPage } from '@/pages/student/ComplaintsPage';
+import { DashboardPage as StudentDashboardPage } from '@/pages/student/DashboardPage';
+import { MenuPage as StudentMenuPage } from '@/pages/student/MenuPage';
+import { BillingPage as StudentBillingPage } from '@/pages/student/BillingPage';
+import { ComplaintsPage as StudentComplaintsPage } from '@/pages/student/ComplaintsPage';
+// Manager imports
+import { ManagerLayout } from '@/components/layout/ManagerLayout';
+import { DashboardPage as ManagerDashboardPage } from '@/pages/manager/DashboardPage';
+import { StudentManagementPage } from '@/pages/manager/StudentManagementPage';
+import { MenuManagementPage } from '@/pages/manager/MenuManagementPage';
 const router = createBrowserRouter([
   {
     path: "/",
     element: <HomePage />,
     errorElement: <RouteErrorBoundary />,
   },
+  // Student Routes
   {
     element: <StudentLayout />,
     errorElement: <RouteErrorBoundary />,
     children: [
-      { path: "/dashboard", element: <DashboardPage /> },
-      { path: "/menu", element: <MenuPage /> },
-      { path: "/billing", element: <BillingPage /> },
-      { path: "/complaints", element: <ComplaintsPage /> },
+      { path: "/dashboard", element: <StudentDashboardPage /> },
+      { path: "/menu", element: <StudentMenuPage /> },
+      { path: "/billing", element: <StudentBillingPage /> },
+      { path: "/complaints", element: <StudentComplaintsPage /> },
+    ]
+  },
+  // Manager Routes
+  {
+    path: "/manager",
+    element: <ManagerLayout />,
+    errorElement: <RouteErrorBoundary />,
+    children: [
+      { index: true, element: <Navigate to="/manager/dashboard" replace /> },
+      { path: "dashboard", element: <ManagerDashboardPage /> },
+      { path: "students", element: <StudentManagementPage /> },
+      { path: "menu", element: <MenuManagementPage /> },
     ]
   }
 ]);

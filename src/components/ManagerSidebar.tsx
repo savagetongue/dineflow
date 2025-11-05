@@ -4,11 +4,9 @@ import {
   Utensils,
   MessageSquareWarning,
   LogOut,
+  Settings,
   Wallet,
   Megaphone,
-  WalletCards,
-  Notebook,
-  Settings,
 } from "lucide-react";
 import {
   Sidebar,
@@ -28,16 +26,11 @@ const mainMenuItems = [
   { path: "/manager/menu", icon: Utensils, label: "Menu" },
 ];
 const communicationMenuItems = [
-  { path: "/manager/complaints", icon: MessageSquareWarning, label: "Feedback" },
+  { path: "/manager/complaints", icon: MessageSquareWarning, label: "Complaints" },
   { path: "/manager/broadcast", icon: Megaphone, label: "Broadcast" },
 ];
 const financialMenuItems = [
     { path: "/manager/billing", icon: Wallet, label: "Billing" },
-    { path: "/manager/guest-payments", icon: WalletCards, label: "Guest Payments" },
-];
-const toolsMenuItems = [
-    { path: "/manager/notes", icon: Notebook, label: "Notes & To-Do" },
-    { path: "/manager/settings", icon: Settings, label: "Settings" },
 ];
 export function ManagerSidebar(): JSX.Element {
   const location = useLocation();
@@ -51,7 +44,7 @@ export function ManagerSidebar(): JSX.Element {
           <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center">
             <Utensils className="h-5 w-5 text-white" />
           </div>
-          <span className="text-lg font-display font-semibold">Mess Connect <span className="text-sm text-muted-foreground font-sans">Manager</span></span>
+          <span className="text-lg font-display font-semibold">DineFlow <span className="text-sm text-muted-foreground font-sans">Manager</span></span>
         </div>
       </SidebarHeader>
       <SidebarContent className="flex-grow">
@@ -91,21 +84,6 @@ export function ManagerSidebar(): JSX.Element {
             <SidebarGroupLabel>Financials</SidebarGroupLabel>
             <SidebarMenu>
                 {financialMenuItems.map((item) => (
-                    <SidebarMenuItem key={item.path}>
-                        <SidebarMenuButton asChild isActive={isLinkActive(item.path)}>
-                            <Link to={item.path}>
-                                <item.icon className="h-5 w-5" />
-                                <span>{item.label}</span>
-                            </Link>
-                        </SidebarMenuButton>
-                    </SidebarMenuItem>
-                ))}
-            </SidebarMenu>
-        </SidebarGroup>
-        <SidebarGroup>
-            <SidebarGroupLabel>Tools</SidebarGroupLabel>
-            <SidebarMenu>
-                {toolsMenuItems.map((item) => (
                     <SidebarMenuItem key={item.path}>
                         <SidebarMenuButton asChild isActive={isLinkActive(item.path)}>
                             <Link to={item.path}>
