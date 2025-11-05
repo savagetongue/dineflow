@@ -92,7 +92,7 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
       description,
       status: 'Pending',
       submittedDate: new Date().toISOString(),
-      imageUrl: image instanceof File ? 'https://images.unsplash.com/photo-1620706857373-180de2546306?q=80&w=800' : undefined,
+      imageUrl: image instanceof File ? `https://source.unsplash.com/800x600/?food,mess,complaint&sig=${Math.random()}` : undefined,
     };
     await ComplaintEntity.create(c.env, newComplaint);
     return ok(c, newComplaint);
