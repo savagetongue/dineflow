@@ -2,7 +2,7 @@
 
 > A minimalist and modern subscription-based management system to streamline mess operations for students, managers, and admins.
 
-[cloudflarebutton]
+[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/savagetongue/dineflow)
 
 DineFlow is a comprehensive, subscription-based mess management system designed for educational institutions and hostels. It streamlines operations for managers, provides transparency for students, and offers oversight for administrators. The platform is built on a modular architecture with four key roles: Student, Manager, Admin, and Guest.
 
@@ -81,7 +81,7 @@ This project is designed for seamless deployment to the Cloudflare network.
 
 Alternatively, you can deploy directly from your GitHub repository using the button below.
 
-[cloudflarebutton]
+[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/savagetongue/dineflow)
 
 ## 🏗️ Architecture
 
