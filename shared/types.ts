@@ -69,3 +69,13 @@ export interface StudentDashboardSummary {
   };
   recentComplaints: Pick<Complaint, 'id' | 'title' | 'status'>[];
 }
+// Authentication
+export interface AuthResponse {
+  token: string;
+  role: 'student' | 'manager' | 'admin';
+  user: {
+    id: string;
+    name: string;
+    email: string;
+  };
+}

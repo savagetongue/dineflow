@@ -1,7 +1,7 @@
 import { Hono } from "hono";
 import type { Env } from './core-utils';
 import { ok, bad, notFound } from './core-utils';
-import type { WeeklyMenu, Bill, Complaint, StudentDashboardSummary, Student } from "@shared/types";
+import type { WeeklyMenu, Bill, Complaint, StudentDashboardSummary, Student, AuthResponse } from "@shared/types";
 // --- MOCK DATA ---
 const MOCK_MENU: WeeklyMenu = {
   Monday: { breakfast: ["Poha", "Jalebi"], lunch: ["Roti", "Dal Fry", "Rice", "Aloo Gobi"], dinner: ["Roti", "Paneer Butter Masala", "Rice"] },
@@ -37,6 +37,52 @@ let MOCK_BROADCASTS = [
     { id: 'br2', message: 'Reminder: Please clear your monthly dues by the 5th of September to avoid late fees.', sentDate: '2024-08-20T15:30:00.000Z' },
 ];
 export function userRoutes(app: Hono<{ Bindings: Env }>) {
+  // --- AUTHENTICATION ROUTES ---
+  app.post('/api/auth/student/send-otp', async (c) => {
+    const { email } = await c.req.json<{ email: string }>();
+    if (!email) return bad(c, 'Email is required');
+    console.log(`Sending OTP to ${email}. Mock OTP is 123456.`);
+    return ok(c, { success: true, message: `OTP sent to ${email}` });
+  });
+  app.post('/api/auth/student/verify-otp', async (c) => {
+    const { email, otp } = await c.req.json<{ email: string, otp: string }>();
+    if (otp === '123456') {
+      const student = MOCK_STUDENTS[0]; // Mock: log in as the first student
+      const response: AuthResponse = {
+        token: `mock-token-student-${student.id}`,
+        role: 'student',
+        user: { id: student.id, name: student.name, email: student.email },
+      };
+      return ok(c, response);
+    }
+    return bad(c, 'Invalid OTP');
+  });
+  app.post('/api/auth/login', async (c) => {
+    const { email, password, role } = await c.req.json<{ email: string, password: string, role: 'manager' | 'admin' }>();
+    if (role === 'manager' && email === 'manager@dineflow.com' && password === 'password') {
+      const response: AuthResponse = {
+        token: 'mock-token-manager',
+        role: 'manager',
+        user: { id: 'm1', name: 'Mr. Manager', email: 'manager@dineflow.com' },
+      };
+      return ok(c, response);
+    }
+    if (role === 'admin' && email === 'admin@dineflow.com' && password === 'password') {
+      const response: AuthResponse = {
+        token: 'mock-token-admin',
+        role: 'admin',
+        user: { id: 'a1', name: 'Ms. Admin', email: 'admin@dineflow.com' },
+      };
+      return ok(c, response);
+    }
+    return bad(c, 'Invalid credentials', 401);
+  });
+  // --- GUEST ROUTES ---
+  app.post('/api/guest/pay', async (c) => {
+    const { name, phone, amount } = await c.req.json();
+    console.log(`Guest payment received: Name: ${name}, Phone: ${phone}, Amount: ${amount}`);
+    return ok(c, { success: true, message: 'Payment successful' });
+  });
   // --- STUDENT ROUTES ---
   app.get('/api/student/summary', (c) => {
     const summary: StudentDashboardSummary = {

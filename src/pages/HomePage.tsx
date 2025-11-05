@@ -19,17 +19,95 @@ import {
   InputOTPSlot,
 } from "@/components/ui/input-otp";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { toast, Toaster } from "@/components/ui/sonner";
+import { api } from "@/lib/api-client";
+import type { AuthResponse } from "@shared/types";
+type StudentLoginStep = "enter-email" | "enter-otp";
 export function HomePage() {
   const navigate = useNavigate();
-  const [otp, setOtp] = useState("");
-  const handleLogin = () => {
-    // In a real app, you'd have role-based logic.
-    // For this demo, any successful login goes to the student dashboard.
-    navigate("/dashboard");
+  // Student state
+  const [studentLoginStep, setStudentLoginStep] = useState<StudentLoginStep>("enter-email");
+  const [studentEmail, setStudentEmail] = useState("");
+  const [studentOtp, setStudentOtp] = useState("");
+  // Manager state
+  const [managerEmail, setManagerEmail] = useState("");
+  const [managerPassword, setManagerPassword] = useState("");
+  // Admin state
+  const [adminEmail, setAdminEmail] = useState("");
+  const [adminPassword, setAdminPassword] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const handleSendOtp = async () => {
+    if (!studentEmail) {
+      toast.error("Please enter your email or phone.");
+      return;
+    }
+    setIsLoading(true);
+    try {
+      await api("/api/auth/student/send-otp", {
+        method: "POST",
+        body: JSON.stringify({ email: studentEmail }),
+      });
+      toast.success("OTP sent successfully!", {
+        description: `An OTP has been sent to ${studentEmail}.`,
+      });
+      setStudentLoginStep("enter-otp");
+    } catch (error) {
+      toast.error("Failed to send OTP", {
+        description: error instanceof Error ? error.message : "Please try again.",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  const handleVerifyOtp = async () => {
+    if (studentOtp.length < 6) {
+      toast.error("Please enter the 6-digit OTP.");
+      return;
+    }
+    setIsLoading(true);
+    try {
+      const data = await api<AuthResponse>("/api/auth/student/verify-otp", {
+        method: "POST",
+        body: JSON.stringify({ email: studentEmail, otp: studentOtp }),
+      });
+      toast.success(`Welcome, ${data.user.name}!`);
+      navigate("/dashboard");
+    } catch (error) {
+      toast.error("Login Failed", {
+        description: error instanceof Error ? error.message : "Invalid OTP. Please try again.",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  const handleCredentialLogin = async (role: 'manager' | 'admin') => {
+    const email = role === 'manager' ? managerEmail : adminEmail;
+    const password = role === 'manager' ? managerPassword : adminPassword;
+    if (!email || !password) {
+      toast.error("Email and password are required.");
+      return;
+    }
+    setIsLoading(true);
+    try {
+      const data = await api<AuthResponse>("/api/auth/login", {
+        method: "POST",
+        body: JSON.stringify({ email, password, role }),
+      });
+      toast.success(`Welcome, ${data.user.name}!`);
+      if (data.role === 'manager') navigate('/manager');
+      if (data.role === 'admin') navigate('/admin');
+    } catch (error) {
+      toast.error("Login Failed", {
+        description: error instanceof Error ? error.message : "Invalid credentials.",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
   return (
     <div className="min-h-screen w-full flex items-center justify-center bg-background relative p-4">
       <ThemeToggle className="absolute top-4 right-4" />
+      <Toaster richColors closeButton />
       <div className="absolute inset-0 -z-10 h-full w-full bg-background bg-[linear-gradient(to_right,#8080800a_1px,transparent_1px),linear-gradient(to_bottom,#8080800a_1px,transparent_1px)] bg-[size:14px_24px]"></div>
       <div className="absolute left-0 right-0 top-0 -z-10 m-auto h-[310px] w-[310px] rounded-full bg-indigo-400 opacity-20 blur-[100px]"></div>
       <div className="flex flex-col items-center space-y-6 animate-fade-in">
@@ -40,61 +118,55 @@ export function HomePage() {
           <h1 className="text-4xl font-display font-bold">DineFlow</h1>
         </div>
         <p className="text-muted-foreground max-w-md text-center">
-          A minimalist and modern subscription-based management system to
-          streamline mess operations.
+          A minimalist and modern subscription-based management system to streamline mess operations.
         </p>
         <Tabs defaultValue="student" className="w-full max-w-sm">
           <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="student">
-              <Utensils className="h-4 w-4 mr-2" /> Student
-            </TabsTrigger>
-            <TabsTrigger value="manager">
-              <KeyRound className="h-4 w-4 mr-2" /> Manager
-            </TabsTrigger>
-            <TabsTrigger value="admin">
-              <ShieldCheck className="h-4 w-4 mr-2" /> Admin
-            </TabsTrigger>
+            <TabsTrigger value="student"><Utensils className="h-4 w-4 mr-2" /> Student</TabsTrigger>
+            <TabsTrigger value="manager"><KeyRound className="h-4 w-4 mr-2" /> Manager</TabsTrigger>
+            <TabsTrigger value="admin"><ShieldCheck className="h-4 w-4 mr-2" /> Admin</TabsTrigger>
           </TabsList>
           <TabsContent value="student">
             <Card>
               <CardHeader>
                 <CardTitle>Student Login</CardTitle>
                 <CardDescription>
-                  Enter your registered email or phone to receive an OTP.
+                  {studentLoginStep === 'enter-email' 
+                    ? "Enter your registered email or phone to receive an OTP."
+                    : "An OTP has been sent to your email. Please enter it below."}
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="email-phone">Email or Phone</Label>
-                  <Input
-                    id="email-phone"
-                    placeholder="e.g., user@example.com"
-                  />
-                </div>
-                <Button className="w-full bg-indigo-600 hover:bg-indigo-700 text-white">
-                  Send OTP
-                </Button>
-                <div className="space-y-2 pt-2">
-                  <Label>Enter OTP</Label>
-                  <InputOTP
-                    maxLength={6}
-                    value={otp}
-                    onChange={(value) => setOtp(value)}
-                  >
-                    <InputOTPGroup className="w-full">
-                      <InputOTPSlot index={0} />
-                      <InputOTPSlot index={1} />
-                      <InputOTPSlot index={2} />
-                      <InputOTPSeparator />
-                      <InputOTPSlot index={3} />
-                      <InputOTPSlot index={4} />
-                      <InputOTPSlot index={5} />
-                    </InputOTPGroup>
-                  </InputOTP>
-                </div>
-                <Button onClick={handleLogin} className="w-full" disabled={otp.length < 6}>
-                  Login
-                </Button>
+                {studentLoginStep === 'enter-email' ? (
+                  <>
+                    <div className="space-y-2">
+                      <Label htmlFor="email-phone">Email or Phone</Label>
+                      <Input id="email-phone" placeholder="e.g., user@example.com" value={studentEmail} onChange={e => setStudentEmail(e.target.value)} disabled={isLoading} />
+                    </div>
+                    <Button onClick={handleSendOtp} className="w-full bg-indigo-600 hover:bg-indigo-700 text-white" disabled={isLoading}>
+                      {isLoading ? "Sending..." : "Send OTP"}
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    <div className="space-y-2">
+                      <Label>Enter OTP</Label>
+                      <InputOTP maxLength={6} value={studentOtp} onChange={setStudentOtp}>
+                        <InputOTPGroup className="w-full">
+                          <InputOTPSlot index={0} /><InputOTPSlot index={1} /><InputOTPSlot index={2} />
+                          <InputOTPSeparator />
+                          <InputOTPSlot index={3} /><InputOTPSlot index={4} /><InputOTPSlot index={5} />
+                        </InputOTPGroup>
+                      </InputOTP>
+                    </div>
+                    <Button onClick={handleVerifyOtp} className="w-full" disabled={isLoading || studentOtp.length < 6}>
+                      {isLoading ? "Verifying..." : "Login"}
+                    </Button>
+                    <Button variant="link" size="sm" className="w-full" onClick={() => setStudentLoginStep('enter-email')}>
+                      Back to email
+                    </Button>
+                  </>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
@@ -102,22 +174,22 @@ export function HomePage() {
             <Card>
               <CardHeader>
                 <CardTitle>Manager Login</CardTitle>
-                <CardDescription>
-                  Enter your credentials to access the manager dashboard.
-                </CardDescription>
+                <CardDescription>Enter your credentials to access the manager dashboard.</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2 relative">
                   <Label htmlFor="manager-email">Email</Label>
                   <Mail className="absolute left-3 top-9 h-4 w-4 text-muted-foreground" />
-                  <Input id="manager-email" type="email" placeholder="manager@dineflow.com" className="pl-10" />
+                  <Input id="manager-email" type="email" placeholder="manager@dineflow.com" className="pl-10" value={managerEmail} onChange={e => setManagerEmail(e.target.value)} disabled={isLoading} />
                 </div>
                 <div className="space-y-2 relative">
                   <Label htmlFor="manager-password">Password</Label>
                   <Lock className="absolute left-3 top-9 h-4 w-4 text-muted-foreground" />
-                  <Input id="manager-password" type="password" placeholder="••••••••" className="pl-10" />
+                  <Input id="manager-password" type="password" placeholder="••••••••" className="pl-10" value={managerPassword} onChange={e => setManagerPassword(e.target.value)} disabled={isLoading} />
                 </div>
-                <Button onClick={handleLogin} className="w-full">Login</Button>
+                <Button onClick={() => handleCredentialLogin('manager')} className="w-full" disabled={isLoading}>
+                  {isLoading ? "Logging in..." : "Login"}
+                </Button>
               </CardContent>
             </Card>
           </TabsContent>
@@ -125,22 +197,22 @@ export function HomePage() {
             <Card>
               <CardHeader>
                 <CardTitle>Admin Login</CardTitle>
-                <CardDescription>
-                  Enter your credentials for administrative access.
-                </CardDescription>
+                <CardDescription>Enter your credentials for administrative access.</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2 relative">
                   <Label htmlFor="admin-email">Email</Label>
                   <Mail className="absolute left-3 top-9 h-4 w-4 text-muted-foreground" />
-                  <Input id="admin-email" type="email" placeholder="admin@dineflow.com" className="pl-10" />
+                  <Input id="admin-email" type="email" placeholder="admin@dineflow.com" className="pl-10" value={adminEmail} onChange={e => setAdminEmail(e.target.value)} disabled={isLoading} />
                 </div>
                 <div className="space-y-2 relative">
                   <Label htmlFor="admin-password">Password</Label>
                   <Lock className="absolute left-3 top-9 h-4 w-4 text-muted-foreground" />
-                  <Input id="admin-password" type="password" placeholder="••••••••" className="pl-10" />
+                  <Input id="admin-password" type="password" placeholder="••••••••" className="pl-10" value={adminPassword} onChange={e => setAdminPassword(e.target.value)} disabled={isLoading} />
                 </div>
-                <Button onClick={handleLogin} className="w-full">Login</Button>
+                <Button onClick={() => handleCredentialLogin('admin')} className="w-full" disabled={isLoading}>
+                  {isLoading ? "Logging in..." : "Login"}
+                </Button>
               </CardContent>
             </Card>
           </TabsContent>
