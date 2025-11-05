@@ -157,6 +157,15 @@ export function ComplaintsManagementPage() {
                 <p className="font-semibold text-sm">{selectedComplaint.title}</p>
                 <p className="text-sm text-muted-foreground mt-1">{selectedComplaint.description}</p>
                 <p className="text-xs text-muted-foreground mt-2">Submitted on {format(parseISO(selectedComplaint.submittedDate), "MMMM d, yyyy 'at' h:mm a")}</p>
+                {selectedComplaint.imageUrl && (
+                  <div className="mt-3">
+                    <img
+                      src={selectedComplaint.imageUrl}
+                      alt={`Image for complaint: ${selectedComplaint.title}`}
+                      className="w-full h-auto max-h-64 rounded-lg border object-cover"
+                    />
+                  </div>
+                )}
               </div>
               <div className="space-y-2">
                 <Label htmlFor="reply-text">Your Reply</Label>

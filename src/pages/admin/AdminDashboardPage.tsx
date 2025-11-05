@@ -75,6 +75,13 @@ export function AdminDashboardPage() {
                     </Badge>
                   </div>
                   <p className="text-sm mt-2">{c.description}</p>
+                  {c.imageUrl && (
+                    <img
+                      src={c.imageUrl}
+                      alt={`Image for complaint: ${c.title}`}
+                      className="w-full h-auto mt-3 rounded-lg border object-cover max-h-48"
+                    />
+                  )}
                   {c.managerReply ? (
                     <div className="mt-3 pt-3 border-t">
                       <p className="text-sm font-semibold">Manager's Reply:</p>

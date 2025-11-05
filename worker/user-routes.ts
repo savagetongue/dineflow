@@ -19,7 +19,7 @@ const MOCK_BILLS: Bill[] = [
 ];
 let MOCK_COMPLAINTS: Complaint[] = [
   { id: 'c1', title: 'Water quality is poor', description: 'The water from the cooler tastes weird. Please check it.', status: 'Resolved', submittedDate: '2025-08-15T10:00:00.000Z', resolvedDate: '2025-08-16T12:00:00.000Z', managerReply: 'We have cleaned the water cooler and replaced the filter.' },
-  { id: 'c2', title: 'Roti is not cooked properly', description: 'The rotis served today were half-cooked.', status: 'In Progress', submittedDate: '2025-08-20T13:00:00.000Z', managerReply: 'We are looking into this with the kitchen staff.' },
+  { id: 'c2', title: 'Roti is not cooked properly', description: 'The rotis served today were half-cooked.', status: 'In Progress', submittedDate: '2025-08-20T13:00:00.000Z', managerReply: 'We are looking into this with the kitchen staff.', imageUrl: 'https://images.unsplash.com/photo-1589302168068-964664d93dc0?q=80&w=800' },
   { id: 'c3', title: 'Mess hall cleanliness', description: 'The tables were not clean during lunch time.', status: 'Pending', submittedDate: '2025-08-22T14:00:00.000Z' },
 ];
 let MOCK_SUGGESTIONS: Suggestion[] = [
@@ -114,13 +114,11 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
     console.log(`Guest payment received: Name: ${name}, Phone: ${phone}, Amount: ${amount}`);
     return ok(c, { success: true, message: 'Payment successful' });
   });
-
   // --- MOCK UPLOAD ROUTE ---
   app.post('/api/upload', (c) => {
     // Simulate an image upload and return a placeholder URL
-    return ok(c, { url: '/placeholder.jpg' });
+    return ok(c, { url: 'https://images.unsplash.com/photo-1589302168068-964664d93dc0?q=80&w=800' });
   });
-
   // --- PUBLIC/SETTINGS ROUTES ---
   app.get('/api/settings', (c) => {
     return ok(c, MOCK_SETTINGS);
@@ -142,16 +140,14 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
     const title = formData.get('title') as string;
     const description = formData.get('description') as string;
     const image = formData.get('image');
-
     if (!title || !description) return bad(c, 'Title and description are required');
-    
     const newComplaint: Complaint = {
       id: `c${MOCK_COMPLAINTS.length + 1}`,
       title,
       description,
       status: 'Pending',
       submittedDate: new Date().toISOString(),
-      imageUrl: image instanceof File ? '/placeholder.jpg' : undefined,
+      imageUrl: image instanceof File ? 'https://images.unsplash.com/photo-1589302168068-964664d93dc0?q=80&w=800' : undefined,
     };
     MOCK_COMPLAINTS.unshift(newComplaint);
     return ok(c, newComplaint);
