@@ -26,6 +26,7 @@ export function ComplaintsPage() {
   const [isSubmittingComplaint, setIsSubmittingComplaint] = useState(false);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
+  const [imageFile, setImageFile] = useState<File | null>(null);
   // Suggestion form state
   const [isSubmittingSuggestion, setIsSubmittingSuggestion] = useState(false);
   const [suggestionText, setSuggestionText] = useState("");
@@ -55,13 +56,20 @@ export function ComplaintsPage() {
     }
     setIsSubmittingComplaint(true);
     try {
+      const formData = new FormData();
+      formData.append("title", title);
+      formData.append("description", description);
+      if (imageFile) {
+        formData.append("image", imageFile);
+      }
       const newComplaint = await api<Complaint>("/api/student/complaints", {
         method: "POST",
-        body: JSON.stringify({ title, description }),
+        body: formData,
       });
       setComplaints([newComplaint, ...complaints]);
       setTitle("");
       setDescription("");
+      setImageFile(null);
       toast.success("Your complaint has been submitted successfully!");
     } catch (err) {
       toast.error("Failed to submit complaint. Please try again.");
@@ -103,7 +111,7 @@ export function ComplaintsPage() {
         </TabsList>
         <TabsContent value="complaints">
           <div className="grid gap-8 lg:grid-cols-5 mt-4">
-            <div className="lg:col-span-2"><ComplaintForm onSubmit={handleComplaintSubmit} title={title} setTitle={setTitle} description={description} setDescription={setDescription} isSubmitting={isSubmittingComplaint} /></div>
+            <div className="lg:col-span-2"><ComplaintForm onSubmit={handleComplaintSubmit} title={title} setTitle={setTitle} description={description} setDescription={setDescription} isSubmitting={isSubmittingComplaint} imageFile={imageFile} setImageFile={setImageFile} /></div>
             <div className="lg:col-span-3"><ComplaintHistory complaints={complaints} loading={loading} error={error} /></div>
           </div>
         </TabsContent>
@@ -118,14 +126,14 @@ export function ComplaintsPage() {
   );
 }
 // Sub-components for better organization
-const ComplaintForm = ({ onSubmit, title, setTitle, description, setDescription, isSubmitting }) => (
+const ComplaintForm = ({ onSubmit, title, setTitle, description, setDescription, isSubmitting, imageFile, setImageFile }) => (
   <Card className="hover:shadow-lg transition-shadow duration-200 sticky top-24">
     <CardHeader><CardTitle>Raise a New Complaint</CardTitle><CardDescription>We'll look into it as soon as possible.</CardDescription></CardHeader>
     <CardContent>
       <form onSubmit={onSubmit} className="space-y-4">
         <div className="space-y-2"><Label htmlFor="title">Title</Label><Input id="title" placeholder="e.g., Food Quality Issue" value={title} onChange={(e) => setTitle(e.target.value)} disabled={isSubmitting} /></div>
         <div className="space-y-2"><Label htmlFor="description">Description</Label><Textarea id="description" placeholder="Please provide details about the issue." value={description} onChange={(e) => setDescription(e.target.value)} disabled={isSubmitting} rows={4} /></div>
-        <div className="space-y-2"><Label htmlFor="file-upload">Attach Image (Optional)</Label><div className="flex items-center justify-center w-full"><label htmlFor="file-upload" className="flex flex-col items-center justify-center w-full h-24 border-2 border-dashed rounded-lg cursor-pointer bg-muted/50 hover:bg-muted"><div className="flex flex-col items-center justify-center pt-5 pb-6"><UploadCloud className="w-8 h-8 mb-2 text-muted-foreground" /><p className="text-sm text-muted-foreground"><span className="font-semibold">Click to upload</span></p></div><Input id="file-upload" type="file" className="hidden" /></label></div></div>
+        <div className="space-y-2"><Label htmlFor="file-upload">Attach Image (Optional)</Label><div className="flex items-center justify-center w-full"><label htmlFor="file-upload" className="flex flex-col items-center justify-center w-full h-24 border-2 border-dashed rounded-lg cursor-pointer bg-muted/50 hover:bg-muted"><div className="flex flex-col items-center justify-center pt-5 pb-6"><UploadCloud className="w-8 h-8 mb-2 text-muted-foreground" /><p className="text-sm text-muted-foreground"><span className="font-semibold">Click to upload</span></p><p className="text-xs text-muted-foreground truncate max-w-full px-2">{imageFile ? imageFile.name : "No file chosen"}</p></div><Input id="file-upload" type="file" className="hidden" accept="image/*" onChange={(e) => setImageFile(e.target.files ? e.target.files[0] : null)} /></label></div></div>
         <Button type="submit" className="w-full" disabled={isSubmitting}>{isSubmitting ? "Submitting..." : "Submit Complaint"}</Button>
       </form>
     </CardContent>
@@ -143,6 +151,7 @@ const ComplaintHistory = ({ complaints, loading, error }) => (
             <li key={c.id} className="border p-4 rounded-lg bg-muted/30">
               <div className="flex justify-between items-start"><div><p className="font-semibold">{c.title}</p><p className="text-sm text-muted-foreground">Submitted on {format(parseISO(c.submittedDate), "MMM d, yyyy")}</p></div><Badge className={`text-white text-xs ${statusColors[c.status]}`}>{c.status}</Badge></div>
               <p className="text-sm mt-2">{c.description}</p>
+              {c.imageUrl && <img src={c.imageUrl} alt={`Image for complaint: ${c.title}`} className="w-full h-auto mt-2 rounded-lg" />}
               {c.managerReply && <div className="mt-3 pt-3 border-t"><p className="text-sm font-semibold">Manager's Reply:</p><p className="text-sm text-muted-foreground italic">"{c.managerReply}"</p></div>}
             </li>
           ))}

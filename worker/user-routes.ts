@@ -114,6 +114,13 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
     console.log(`Guest payment received: Name: ${name}, Phone: ${phone}, Amount: ${amount}`);
     return ok(c, { success: true, message: 'Payment successful' });
   });
+
+  // --- MOCK UPLOAD ROUTE ---
+  app.post('/api/upload', (c) => {
+    // Simulate an image upload and return a placeholder URL
+    return ok(c, { url: '/placeholder.jpg' });
+  });
+
   // --- PUBLIC/SETTINGS ROUTES ---
   app.get('/api/settings', (c) => {
     return ok(c, MOCK_SETTINGS);
@@ -131,14 +138,20 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
   app.get('/api/student/billing', (c) => ok(c, MOCK_BILLS));
   app.get('/api/student/complaints', (c) => ok(c, MOCK_COMPLAINTS));
   app.post('/api/student/complaints', async (c) => {
-    const { title, description } = await c.req.json();
+    const formData = await c.req.formData();
+    const title = formData.get('title') as string;
+    const description = formData.get('description') as string;
+    const image = formData.get('image');
+
     if (!title || !description) return bad(c, 'Title and description are required');
+    
     const newComplaint: Complaint = {
       id: `c${MOCK_COMPLAINTS.length + 1}`,
       title,
       description,
       status: 'Pending',
       submittedDate: new Date().toISOString(),
+      imageUrl: image instanceof File ? '/placeholder.jpg' : undefined,
     };
     MOCK_COMPLAINTS.unshift(newComplaint);
     return ok(c, newComplaint);
