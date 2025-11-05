@@ -4,7 +4,6 @@ import {
   Receipt,
   MessageSquareWarning,
   LogOut,
-  BookCheck,
 } from "lucide-react";
 import {
   Sidebar,
@@ -20,8 +19,7 @@ const menuItems = [
   { path: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
   { path: "/menu", icon: Utensils, label: "Weekly Menu" },
   { path: "/billing", icon: Receipt, label: "Billing" },
-  { path: "/complaints", icon: MessageSquareWarning, label: "Feedback" },
-  { path: "/rules", icon: BookCheck, label: "Mess Rules" },
+  { path: "/complaints", icon: MessageSquareWarning, label: "Complaints" },
 ];
 export function StudentSidebar(): JSX.Element {
   const location = useLocation();
@@ -32,7 +30,7 @@ export function StudentSidebar(): JSX.Element {
           <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center">
             <Utensils className="h-5 w-5 text-white" />
           </div>
-          <span className="text-lg font-display font-semibold">Mess Connect</span>
+          <span className="text-lg font-display font-semibold">DineFlow</span>
         </div>
       </SidebarHeader>
       <SidebarContent className="flex-grow">
