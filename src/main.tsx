@@ -20,6 +20,7 @@ import { DashboardPage as StudentDashboardPage } from '@/pages/student/Dashboard
 import { MenuPage as StudentMenuPage } from '@/pages/student/MenuPage';
 import { BillingPage as StudentBillingPage } from '@/pages/student/BillingPage';
 import { ComplaintsPage as StudentComplaintsPage } from '@/pages/student/ComplaintsPage';
+import { RulesPage as StudentRulesPage } from '@/pages/student/RulesPage';
 // Manager imports
 import { ManagerLayout } from '@/components/layout/ManagerLayout';
 import { DashboardPage as ManagerDashboardPage } from '@/pages/manager/DashboardPage';
@@ -30,6 +31,7 @@ import { BroadcastPage } from '@/pages/manager/BroadcastPage';
 import { BillingManagementPage } from '@/pages/manager/BillingManagementPage';
 import { NotesPage } from '@/pages/manager/NotesPage';
 import { GuestPaymentsPage } from '@/pages/manager/GuestPaymentsPage';
+import { SettingsPage as ManagerSettingsPage } from '@/pages/manager/SettingsPage';
 // Admin imports
 import { AdminLayout } from '@/components/layout/AdminLayout';
 import { AdminDashboardPage } from '@/pages/admin/AdminDashboardPage';
@@ -58,6 +60,7 @@ const router = createBrowserRouter([
       { path: "/menu", element: <StudentMenuPage /> },
       { path: "/billing", element: <StudentBillingPage /> },
       { path: "/complaints", element: <StudentComplaintsPage /> },
+      { path: "/rules", element: <StudentRulesPage /> },
     ]
   },
   // Manager Routes
@@ -75,6 +78,7 @@ const router = createBrowserRouter([
       { path: "billing", element: <BillingManagementPage /> },
       { path: "notes", element: <NotesPage /> },
       { path: "guest-payments", element: <GuestPaymentsPage /> },
+      { path: "settings", element: <ManagerSettingsPage /> },
     ]
   },
   // Admin Routes

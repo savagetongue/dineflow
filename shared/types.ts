@@ -80,3 +80,8 @@ export interface AuthResponse {
   };
 }
 export type StudentRegistrationData = Omit<Student, 'id'>;
+// Mess Settings
+export interface MessSettings {
+  monthlyAmount: number;
+  rules: string[];
+}

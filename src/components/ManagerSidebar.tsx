@@ -8,6 +8,7 @@ import {
   Megaphone,
   WalletCards,
   Notebook,
+  Settings,
 } from "lucide-react";
 import {
   Sidebar,
@@ -36,6 +37,7 @@ const financialMenuItems = [
 ];
 const toolsMenuItems = [
     { path: "/manager/notes", icon: Notebook, label: "Notes & To-Do" },
+    { path: "/manager/settings", icon: Settings, label: "Settings" },
 ];
 export function ManagerSidebar(): JSX.Element {
   const location = useLocation();

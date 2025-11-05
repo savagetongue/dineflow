@@ -1,7 +1,7 @@
 import { Hono } from "hono";
 import type { Env } from './core-utils';
 import { ok, bad, notFound } from './core-utils';
-import type { WeeklyMenu, Bill, Complaint, StudentDashboardSummary, Student, AuthResponse, StudentRegistrationData } from "@shared/types";
+import type { WeeklyMenu, Bill, Complaint, StudentDashboardSummary, Student, AuthResponse, StudentRegistrationData, MessSettings } from "@shared/types";
 // --- MOCK DATA ---
 const MOCK_MENU: WeeklyMenu = {
   Monday: { breakfast: ["Poha", "Jalebi"], lunch: ["Roti", "Dal Fry", "Rice", "Aloo Gobi"], dinner: ["Roti", "Paneer Butter Masala", "Rice"] },
@@ -41,6 +41,16 @@ const MOCK_GUEST_PAYMENTS = [
     { id: 'gp2', name: 'Visitor B', phone: '8888888881', amount: 75, paymentDate: '2024-08-28T19:15:00.000Z' },
     { id: 'gp3', name: 'Visitor C', phone: '8888888882', amount: 75, paymentDate: '2024-08-29T12:55:00.000Z' },
 ];
+let MOCK_SETTINGS: MessSettings = {
+    monthlyAmount: 3500,
+    rules: [
+        "Mess timings must be strictly followed.",
+        "Wastage of food is strictly prohibited.",
+        "Students must maintain cleanliness in the mess hall.",
+        "Outside food is not allowed inside the mess hall.",
+        "Monthly dues must be cleared by the 5th of each month.",
+    ],
+};
 export function userRoutes(app: Hono<{ Bindings: Env }>) {
   // --- AUTHENTICATION & REGISTRATION ROUTES ---
   app.post('/api/auth/student/send-otp', async (c) => {
@@ -82,6 +92,19 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
     }
     return bad(c, 'Invalid credentials', 401);
   });
+  app.post('/api/register/send-otp', async (c) => {
+    const { email } = await c.req.json<{ email: string }>();
+    if (!email) return bad(c, 'Email is required');
+    console.log(`Sending registration OTP to ${email}. Mock OTP is 654321.`);
+    return ok(c, { success: true, message: `OTP sent to ${email}` });
+  });
+  app.post('/api/register/verify-otp', async (c) => {
+    const { email, otp } = await c.req.json<{ email: string, otp: string }>();
+    if (otp === '654321') {
+      return ok(c, { success: true, message: 'OTP verified successfully.' });
+    }
+    return bad(c, 'Invalid OTP');
+  });
   app.post('/api/student/register', async (c) => {
     const data = await c.req.json<StudentRegistrationData>();
     if (!data.name || !data.email || !data.phone || !data.roomNumber) {
@@ -102,10 +125,14 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
     console.log(`Guest payment received: Name: ${name}, Phone: ${phone}, Amount: ${amount}`);
     return ok(c, { success: true, message: 'Payment successful' });
   });
+  // --- PUBLIC/SETTINGS ROUTES ---
+  app.get('/api/settings', (c) => {
+    return ok(c, MOCK_SETTINGS);
+  });
   // --- STUDENT ROUTES ---
   app.get('/api/student/summary', (c) => {
     const summary: StudentDashboardSummary = {
-      currentDue: { amount: 3500, dueDate: '2024-09-05T00:00:00.000Z' },
+      currentDue: { amount: MOCK_SETTINGS.monthlyAmount, dueDate: '2024-09-05T00:00:00.000Z' },
       todaysMenu: MOCK_MENU.Wednesday, // Assuming today is Wednesday for mock
       recentComplaints: MOCK_COMPLAINTS.slice(0, 2).map(({ id, title, status }) => ({ id, title, status })),
     };
@@ -179,11 +206,11 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
   app.get('/api/manager/billing-overview', (c) => {
     const overview = {
         unpaid: [
-            { student: { id: 's1', name: 'Rohan Sharma', roomNumber: 'A-101' }, id: 'b-s1', month: 'August 2024', amount: 3500, status: 'Due', dueDate: '2024-09-05T00:00:00.000Z' }
+            { student: { id: 's1', name: 'Rohan Sharma', roomNumber: 'A-101' }, id: 'b-s1', month: 'August 2024', amount: MOCK_SETTINGS.monthlyAmount, status: 'Due', dueDate: '2024-09-05T00:00:00.000Z' }
         ],
         paid: [
-            { student: { id: 's2', name: 'Priya Patel', roomNumber: 'B-204' }, id: 'b-s2', month: 'August 2024', amount: 3500, status: 'Paid', dueDate: '2024-09-05T00:00:00.000Z', paidDate: '2024-08-28T00:00:00.000Z' },
-            { student: { id: 's3', name: 'Amit Singh', roomNumber: 'A-102' }, id: 'b-s3', month: 'August 2024', amount: 3500, status: 'Paid', dueDate: '2024-09-05T00:00:00.000Z', paidDate: '2024-08-29T00:00:00.000Z' },
+            { student: { id: 's2', name: 'Priya Patel', roomNumber: 'B-204' }, id: 'b-s2', month: 'August 2024', amount: MOCK_SETTINGS.monthlyAmount, status: 'Paid', dueDate: '2024-09-05T00:00:00.000Z', paidDate: '2024-08-28T00:00:00.000Z' },
+            { student: { id: 's3', name: 'Amit Singh', roomNumber: 'A-102' }, id: 'b-s3', month: 'August 2024', amount: MOCK_SETTINGS.monthlyAmount, status: 'Paid', dueDate: '2024-09-05T00:00:00.000Z', paidDate: '2024-08-29T00:00:00.000Z' },
         ],
         overdue: [
             { student: { id: 's4', name: 'Sunita Gupta', roomNumber: 'C-401' }, id: 'b-s4', month: 'July 2024', amount: 3200, status: 'Overdue', dueDate: '2024-08-05T00:00:00.000Z' }
@@ -193,6 +220,15 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
   });
   app.get('/api/manager/guest-payments', (c) => {
     return ok(c, MOCK_GUEST_PAYMENTS);
+  });
+  app.post('/api/manager/settings', async (c) => {
+    const newSettings = await c.req.json<MessSettings>();
+    if (typeof newSettings.monthlyAmount !== 'number' || !Array.isArray(newSettings.rules)) {
+        return bad(c, 'Invalid settings format.');
+    }
+    MOCK_SETTINGS = newSettings;
+    console.log('Updated mess settings:', MOCK_SETTINGS);
+    return ok(c, MOCK_SETTINGS);
   });
   // --- ADMIN ROUTES ---
   app.get('/api/admin/complaints', (c) => {

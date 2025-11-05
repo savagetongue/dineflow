@@ -4,6 +4,7 @@ import {
   Receipt,
   MessageSquareWarning,
   LogOut,
+  BookCheck,
 } from "lucide-react";
 import {
   Sidebar,
@@ -20,6 +21,7 @@ const menuItems = [
   { path: "/menu", icon: Utensils, label: "Weekly Menu" },
   { path: "/billing", icon: Receipt, label: "Billing" },
   { path: "/complaints", icon: MessageSquareWarning, label: "Complaints" },
+  { path: "/rules", icon: BookCheck, label: "Mess Rules" },
 ];
 export function StudentSidebar(): JSX.Element {
   const location = useLocation();
