@@ -67,10 +67,10 @@ export function GuestPaymentPage() {
             <div className="space-y-2 relative">
               <Label htmlFor="guest-name">Full Name</Label>
               <User className="absolute left-3 top-9 h-4 w-4 text-muted-foreground" />
-              <Input 
-                id="guest-name" 
-                placeholder="Enter your name" 
-                className="pl-10" 
+              <Input
+                id="guest-name"
+                placeholder="Enter your name"
+                className="pl-10"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 disabled={isProcessing}
@@ -79,11 +79,11 @@ export function GuestPaymentPage() {
             <div className="space-y-2 relative">
               <Label htmlFor="guest-phone">Phone Number</Label>
               <Phone className="absolute left-3 top-9 h-4 w-4 text-muted-foreground" />
-              <Input 
-                id="guest-phone" 
-                type="tel" 
-                placeholder="Enter your phone number" 
-                className="pl-10" 
+              <Input
+                id="guest-phone"
+                type="tel"
+                placeholder="Enter your phone number"
+                className="pl-10"
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
                 disabled={isProcessing}
@@ -91,8 +91,8 @@ export function GuestPaymentPage() {
             </div>
           </CardContent>
           <CardFooter>
-            <Button 
-              className="w-full bg-indigo-600 hover:bg-indigo-700 text-white" 
+            <Button
+              className="w-full bg-indigo-600 hover:bg-indigo-700 text-white"
               onClick={handlePayment}
               disabled={isProcessing}
             >
@@ -101,7 +101,7 @@ export function GuestPaymentPage() {
           </CardFooter>
         </Card>
         <footer className="text-center text-sm text-muted-foreground/80 pt-8">
-          <p>Built with ❤️ at Cloudflare</p>
+          <p>By @anandbhagyawant</p>
         </footer>
       </div>
     </div>

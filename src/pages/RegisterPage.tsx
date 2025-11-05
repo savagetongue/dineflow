@@ -109,7 +109,7 @@ export function RegisterPage() {
         <Card className="w-full max-w-sm">{renderContent()}</Card>
         <div className="text-center text-sm text-muted-foreground/80 pt-4">
           {settings ? (<p>Current Monthly Fee: <span className="font-bold text-foreground">₹{settings.monthlyAmount.toLocaleString('en-IN')}</span></p>) : (<Skeleton className="h-5 w-48" />)}
-          <p className="mt-4">Built with ❤️ at Cloudflare</p>
+          <p className="mt-4">By @anandbhagyawant</p>
         </div>
       </div>
     </div>

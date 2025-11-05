@@ -180,7 +180,7 @@ export function HomePage() {
           </TabsContent>
         </Tabs>
         <footer className="text-center text-sm text-muted-foreground/80 pt-8">
-          <p>Built with ❤️ at Cloudflare</p>
+          <p>By @anandbhagyawant</p>
         </footer>
       </div>
     </div>
