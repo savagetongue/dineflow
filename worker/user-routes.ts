@@ -1,7 +1,7 @@
 import { Hono } from "hono";
 import type { Env } from './core-utils';
 import { ok, bad, notFound } from './core-utils';
-import type { WeeklyMenu, Bill, Complaint, StudentDashboardSummary, Student, AuthResponse } from "@shared/types";
+import type { WeeklyMenu, Bill, Complaint, StudentDashboardSummary, Student, AuthResponse, StudentRegistrationData } from "@shared/types";
 // --- MOCK DATA ---
 const MOCK_MENU: WeeklyMenu = {
   Monday: { breakfast: ["Poha", "Jalebi"], lunch: ["Roti", "Dal Fry", "Rice", "Aloo Gobi"], dinner: ["Roti", "Paneer Butter Masala", "Rice"] },
@@ -28,7 +28,7 @@ const MOCK_STUDENTS: Student[] = [
     { id: 's3', name: 'Amit Singh', email: 'amit.singh@example.com', phone: '9876543212', roomNumber: 'A-102' },
     { id: 's4', name: 'Sunita Gupta', email: 'sunita.gupta@example.com', phone: '9876543213', roomNumber: 'C-401' },
 ];
-const MOCK_STUDENT_REQUESTS: (Student & { status: 'Pending' })[] = [
+let MOCK_STUDENT_REQUESTS: (Student & { status: 'Pending' })[] = [
     { id: 'sr1', name: 'Kavita Iyer', email: 'kavita.iyer@example.com', phone: '9123456780', roomNumber: 'C-301', status: 'Pending' },
     { id: 'sr2', name: 'Suresh Kumar', email: 'suresh.kumar@example.com', phone: '9123456781', roomNumber: 'D-110', status: 'Pending' },
 ];
@@ -37,7 +37,7 @@ let MOCK_BROADCASTS = [
     { id: 'br2', message: 'Reminder: Please clear your monthly dues by the 5th of September to avoid late fees.', sentDate: '2024-08-20T15:30:00.000Z' },
 ];
 export function userRoutes(app: Hono<{ Bindings: Env }>) {
-  // --- AUTHENTICATION ROUTES ---
+  // --- AUTHENTICATION & REGISTRATION ROUTES ---
   app.post('/api/auth/student/send-otp', async (c) => {
     const { email } = await c.req.json<{ email: string }>();
     if (!email) return bad(c, 'Email is required');
@@ -76,6 +76,20 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
       return ok(c, response);
     }
     return bad(c, 'Invalid credentials', 401);
+  });
+  app.post('/api/student/register', async (c) => {
+    const data = await c.req.json<StudentRegistrationData>();
+    if (!data.name || !data.email || !data.phone || !data.roomNumber) {
+        return bad(c, 'All fields are required.');
+    }
+    const newRequest = {
+        ...data,
+        id: `sr${MOCK_STUDENT_REQUESTS.length + 3}`, // a unique ID
+        status: 'Pending' as const,
+    };
+    MOCK_STUDENT_REQUESTS.push(newRequest);
+    console.log('New student request received:', newRequest);
+    return ok(c, { success: true, message: 'Registration successful! Your request is pending approval.' });
   });
   // --- GUEST ROUTES ---
   app.post('/api/guest/pay', async (c) => {

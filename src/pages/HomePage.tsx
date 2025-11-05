@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Utensils, KeyRound, ShieldCheck, Mail, Lock } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -131,7 +131,7 @@ export function HomePage() {
               <CardHeader>
                 <CardTitle>Student Login</CardTitle>
                 <CardDescription>
-                  {studentLoginStep === 'enter-email' 
+                  {studentLoginStep === 'enter-email'
                     ? "Enter your registered email or phone to receive an OTP."
                     : "An OTP has been sent to your email. Please enter it below."}
                 </CardDescription>
@@ -162,11 +162,17 @@ export function HomePage() {
                     <Button onClick={handleVerifyOtp} className="w-full" disabled={isLoading || studentOtp.length < 6}>
                       {isLoading ? "Verifying..." : "Login"}
                     </Button>
-                    <Button variant="link" size="sm" className="w-full" onClick={() => setStudentLoginStep('enter-email')}>
+                    <Button variant="link" size="sm" className="w-full" onClick={() => setStudentLoginStep('enter-email')} disabled={isLoading}>
                       Back to email
                     </Button>
                   </>
                 )}
+                <div className="text-center text-sm">
+                  Don't have an account?{" "}
+                  <Button variant="link" asChild className="p-0 h-auto">
+                    <Link to="/register">Register</Link>
+                  </Button>
+                </div>
               </CardContent>
             </Card>
           </TabsContent>

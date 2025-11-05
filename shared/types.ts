@@ -69,7 +69,7 @@ export interface StudentDashboardSummary {
   };
   recentComplaints: Pick<Complaint, 'id' | 'title' | 'status'>[];
 }
-// Authentication
+// Authentication & Registration
 export interface AuthResponse {
   token: string;
   role: 'student' | 'manager' | 'admin';
@@ -79,3 +79,4 @@ export interface AuthResponse {
     email: string;
   };
 }
+export type StudentRegistrationData = Omit<Student, 'id'>;
