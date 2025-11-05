@@ -79,7 +79,12 @@ export interface AuthResponse {
     email: string;
   };
 }
-export type StudentRegistrationData = Omit<Student, 'id'>;
+export type StudentRegistrationData = Omit<Student, 'id'> & { password?: string };
+export interface AuthRequest {
+  email: string;
+  password?: string;
+  otp?: string;
+}
 // Mess Settings
 export interface MessSettings {
   monthlyAmount: number;

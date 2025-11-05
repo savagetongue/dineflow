@@ -1,7 +1,7 @@
 import { Hono } from "hono";
 import type { Env } from './core-utils';
 import { ok, bad, notFound } from './core-utils';
-import type { WeeklyMenu, Bill, Complaint, StudentDashboardSummary, Student, AuthResponse, StudentRegistrationData, MessSettings } from "@shared/types";
+import type { WeeklyMenu, Bill, Complaint, StudentDashboardSummary, Student, AuthResponse, StudentRegistrationData, MessSettings, AuthRequest } from "@shared/types";
 // --- MOCK DATA ---
 const MOCK_MENU: WeeklyMenu = {
   Monday: { breakfast: ["Poha", "Jalebi"], lunch: ["Roti", "Dal Fry", "Rice", "Aloo Gobi"], dinner: ["Roti", "Paneer Butter Masala", "Rice"] },
@@ -22,8 +22,8 @@ let MOCK_COMPLAINTS: Complaint[] = [
   { id: 'c2', title: 'Roti is not cooked properly', description: 'The rotis served today were half-cooked.', status: 'In Progress', submittedDate: '2024-08-20T13:00:00.000Z', managerReply: 'We are looking into this with the kitchen staff.' },
   { id: 'c3', title: 'Mess hall cleanliness', description: 'The tables were not clean during lunch time.', status: 'Pending', submittedDate: '2024-08-22T14:00:00.000Z' },
 ];
-const MOCK_STUDENTS: Student[] = [
-    { id: 's1', name: 'Rohan Sharma', email: 'rohan.sharma@example.com', phone: '9876543210', roomNumber: 'A-101' },
+const MOCK_STUDENTS: (Student & { password?: string })[] = [
+    { id: 's1', name: 'Rohan Sharma', email: 'rohan.sharma@example.com', phone: '9876543210', roomNumber: 'A-101', password: 'password123' },
     { id: 's2', name: 'Priya Patel', email: 'priya.patel@example.com', phone: '9876543211', roomNumber: 'B-204' },
     { id: 's3', name: 'Amit Singh', email: 'amit.singh@example.com', phone: '9876543212', roomNumber: 'A-102' },
     { id: 's4', name: 'Sunita Gupta', email: 'sunita.gupta@example.com', phone: '9876543213', roomNumber: 'C-401' },
@@ -53,16 +53,10 @@ let MOCK_SETTINGS: MessSettings = {
 };
 export function userRoutes(app: Hono<{ Bindings: Env }>) {
   // --- AUTHENTICATION & REGISTRATION ROUTES ---
-  app.post('/api/auth/student/send-otp', async (c) => {
-    const { email } = await c.req.json<{ email: string }>();
-    if (!email) return bad(c, 'Email is required');
-    console.log(`Sending OTP to ${email}. Mock OTP is 123456.`);
-    return ok(c, { success: true, message: `OTP sent to ${email}` });
-  });
-  app.post('/api/auth/student/verify-otp', async (c) => {
-    const { email, otp } = await c.req.json<{ email: string, otp: string }>();
-    if (otp === '123456') {
-      const student = MOCK_STUDENTS[0]; // Mock: log in as the first student
+  app.post('/api/auth/student/login', async (c) => {
+    const { email, password } = await c.req.json<AuthRequest>();
+    const student = MOCK_STUDENTS.find(s => s.email === email && s.password === password);
+    if (student) {
       const response: AuthResponse = {
         token: `mock-token-student-${student.id}`,
         role: 'student',
@@ -70,7 +64,7 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
       };
       return ok(c, response);
     }
-    return bad(c, 'Invalid OTP');
+    return bad(c, 'Invalid email or password', 401);
   });
   app.post('/api/auth/login', async (c) => {
     const { email, password, role } = await c.req.json<{ email: string, password: string, role: 'manager' | 'admin' }>();
@@ -107,16 +101,20 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
   });
   app.post('/api/student/register', async (c) => {
     const data = await c.req.json<StudentRegistrationData>();
-    if (!data.name || !data.email || !data.phone || !data.roomNumber) {
+    if (!data.name || !data.email || !data.phone || !data.roomNumber || !data.password) {
         return bad(c, 'All fields are required.');
     }
     const newRequest = {
-        ...data,
+        name: data.name,
+        email: data.email,
+        phone: data.phone,
+        roomNumber: data.roomNumber,
         id: `sr${MOCK_STUDENT_REQUESTS.length + 3}`, // a unique ID
         status: 'Pending' as const,
     };
     MOCK_STUDENT_REQUESTS.push(newRequest);
     console.log('New student request received:', newRequest);
+    console.log('Password received (for mock purposes):', data.password);
     return ok(c, { success: true, message: 'Registration successful! Your request is pending approval.' });
   });
   // --- GUEST ROUTES ---

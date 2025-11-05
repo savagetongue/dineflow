@@ -12,23 +12,15 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-  InputOTP,
-  InputOTPGroup,
-  InputOTPSeparator,
-  InputOTPSlot,
-} from "@/components/ui/input-otp";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { toast, Toaster } from "@/components/ui/sonner";
 import { api } from "@/lib/api-client";
 import type { AuthResponse } from "@shared/types";
-type StudentLoginStep = "enter-email" | "enter-otp";
 export function HomePage() {
   const navigate = useNavigate();
   // Student state
-  const [studentLoginStep, setStudentLoginStep] = useState<StudentLoginStep>("enter-email");
   const [studentEmail, setStudentEmail] = useState("");
-  const [studentOtp, setStudentOtp] = useState("");
+  const [studentPassword, setStudentPassword] = useState("");
   // Manager state
   const [managerEmail, setManagerEmail] = useState("");
   const [managerPassword, setManagerPassword] = useState("");
@@ -36,45 +28,22 @@ export function HomePage() {
   const [adminEmail, setAdminEmail] = useState("");
   const [adminPassword, setAdminPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const handleSendOtp = async () => {
-    if (!studentEmail) {
-      toast.error("Please enter your email or phone.");
+  const handleStudentLogin = async () => {
+    if (!studentEmail || !studentPassword) {
+      toast.error("Email and password are required.");
       return;
     }
     setIsLoading(true);
     try {
-      await api("/api/auth/student/send-otp", {
+      const data = await api<AuthResponse>("/api/auth/student/login", {
         method: "POST",
-        body: JSON.stringify({ email: studentEmail }),
-      });
-      toast.success("OTP sent successfully!", {
-        description: `An OTP has been sent to ${studentEmail}.`,
-      });
-      setStudentLoginStep("enter-otp");
-    } catch (error) {
-      toast.error("Failed to send OTP", {
-        description: error instanceof Error ? error.message : "Please try again.",
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-  const handleVerifyOtp = async () => {
-    if (studentOtp.length < 6) {
-      toast.error("Please enter the 6-digit OTP.");
-      return;
-    }
-    setIsLoading(true);
-    try {
-      const data = await api<AuthResponse>("/api/auth/student/verify-otp", {
-        method: "POST",
-        body: JSON.stringify({ email: studentEmail, otp: studentOtp }),
+        body: JSON.stringify({ email: studentEmail, password: studentPassword }),
       });
       toast.success(`Welcome, ${data.user.name}!`);
       navigate("/dashboard");
     } catch (error) {
       toast.error("Login Failed", {
-        description: error instanceof Error ? error.message : "Invalid OTP. Please try again.",
+        description: error instanceof Error ? error.message : "Invalid credentials.",
       });
     } finally {
       setIsLoading(false);
@@ -131,42 +100,23 @@ export function HomePage() {
               <CardHeader>
                 <CardTitle>Student Login</CardTitle>
                 <CardDescription>
-                  {studentLoginStep === 'enter-email'
-                    ? "Enter your registered email or phone to receive an OTP."
-                    : "An OTP has been sent to your email. Please enter it below."}
+                  Enter your credentials to access your dashboard.
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                {studentLoginStep === 'enter-email' ? (
-                  <>
-                    <div className="space-y-2">
-                      <Label htmlFor="email-phone">Email or Phone</Label>
-                      <Input id="email-phone" placeholder="e.g., user@example.com" value={studentEmail} onChange={e => setStudentEmail(e.target.value)} disabled={isLoading} />
-                    </div>
-                    <Button onClick={handleSendOtp} className="w-full bg-indigo-600 hover:bg-indigo-700 text-white" disabled={isLoading}>
-                      {isLoading ? "Sending..." : "Send OTP"}
-                    </Button>
-                  </>
-                ) : (
-                  <>
-                    <div className="space-y-2">
-                      <Label>Enter OTP</Label>
-                      <InputOTP maxLength={6} value={studentOtp} onChange={setStudentOtp}>
-                        <InputOTPGroup className="w-full">
-                          <InputOTPSlot index={0} /><InputOTPSlot index={1} /><InputOTPSlot index={2} />
-                          <InputOTPSeparator />
-                          <InputOTPSlot index={3} /><InputOTPSlot index={4} /><InputOTPSlot index={5} />
-                        </InputOTPGroup>
-                      </InputOTP>
-                    </div>
-                    <Button onClick={handleVerifyOtp} className="w-full" disabled={isLoading || studentOtp.length < 6}>
-                      {isLoading ? "Verifying..." : "Login"}
-                    </Button>
-                    <Button variant="link" size="sm" className="w-full" onClick={() => setStudentLoginStep('enter-email')} disabled={isLoading}>
-                      Back to email
-                    </Button>
-                  </>
-                )}
+                <div className="space-y-2 relative">
+                  <Label htmlFor="student-email">Email</Label>
+                  <Mail className="absolute left-3 top-9 h-4 w-4 text-muted-foreground" />
+                  <Input id="student-email" type="email" placeholder="e.g., user@example.com" className="pl-10" value={studentEmail} onChange={e => setStudentEmail(e.target.value)} disabled={isLoading} />
+                </div>
+                <div className="space-y-2 relative">
+                  <Label htmlFor="student-password">Password</Label>
+                  <Lock className="absolute left-3 top-9 h-4 w-4 text-muted-foreground" />
+                  <Input id="student-password" type="password" placeholder="••••••••" className="pl-10" value={studentPassword} onChange={e => setStudentPassword(e.target.value)} disabled={isLoading} />
+                </div>
+                <Button onClick={handleStudentLogin} className="w-full bg-indigo-600 hover:bg-indigo-700 text-white" disabled={isLoading}>
+                  {isLoading ? "Logging in..." : "Login"}
+                </Button>
                 <div className="text-center text-sm">
                   Don't have an account?{" "}
                   <Button variant="link" asChild className="p-0 h-auto">
