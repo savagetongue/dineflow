@@ -6,6 +6,8 @@ import {
   LogOut,
   Wallet,
   Megaphone,
+  WalletCards,
+  Notebook,
 } from "lucide-react";
 import {
   Sidebar,
@@ -30,6 +32,10 @@ const communicationMenuItems = [
 ];
 const financialMenuItems = [
     { path: "/manager/billing", icon: Wallet, label: "Billing" },
+    { path: "/manager/guest-payments", icon: WalletCards, label: "Guest Payments" },
+];
+const toolsMenuItems = [
+    { path: "/manager/notes", icon: Notebook, label: "Notes & To-Do" },
 ];
 export function ManagerSidebar(): JSX.Element {
   const location = useLocation();
@@ -83,6 +89,21 @@ export function ManagerSidebar(): JSX.Element {
             <SidebarGroupLabel>Financials</SidebarGroupLabel>
             <SidebarMenu>
                 {financialMenuItems.map((item) => (
+                    <SidebarMenuItem key={item.path}>
+                        <SidebarMenuButton asChild isActive={isLinkActive(item.path)}>
+                            <Link to={item.path}>
+                                <item.icon className="h-5 w-5" />
+                                <span>{item.label}</span>
+                            </Link>
+                        </SidebarMenuButton>
+                    </SidebarMenuItem>
+                ))}
+            </SidebarMenu>
+        </SidebarGroup>
+        <SidebarGroup>
+            <SidebarGroupLabel>Tools</SidebarGroupLabel>
+            <SidebarMenu>
+                {toolsMenuItems.map((item) => (
                     <SidebarMenuItem key={item.path}>
                         <SidebarMenuButton asChild isActive={isLinkActive(item.path)}>
                             <Link to={item.path}>

@@ -36,6 +36,11 @@ let MOCK_BROADCASTS = [
     { id: 'br1', message: 'The mess will be closed for dinner on Sunday, 25th August, for pest control maintenance. Inconvenience is regretted.', sentDate: '2024-08-23T11:00:00.000Z' },
     { id: 'br2', message: 'Reminder: Please clear your monthly dues by the 5th of September to avoid late fees.', sentDate: '2024-08-20T15:30:00.000Z' },
 ];
+const MOCK_GUEST_PAYMENTS = [
+    { id: 'gp1', name: 'Visitor A', phone: '8888888880', amount: 75, paymentDate: '2024-08-28T13:05:00.000Z' },
+    { id: 'gp2', name: 'Visitor B', phone: '8888888881', amount: 75, paymentDate: '2024-08-28T19:15:00.000Z' },
+    { id: 'gp3', name: 'Visitor C', phone: '8888888882', amount: 75, paymentDate: '2024-08-29T12:55:00.000Z' },
+];
 export function userRoutes(app: Hono<{ Bindings: Env }>) {
   // --- AUTHENTICATION & REGISTRATION ROUTES ---
   app.post('/api/auth/student/send-otp', async (c) => {
@@ -185,6 +190,9 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
         ],
     };
     return ok(c, overview);
+  });
+  app.get('/api/manager/guest-payments', (c) => {
+    return ok(c, MOCK_GUEST_PAYMENTS);
   });
   // --- ADMIN ROUTES ---
   app.get('/api/admin/complaints', (c) => {

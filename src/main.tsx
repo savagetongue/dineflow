@@ -28,6 +28,8 @@ import { MenuManagementPage } from '@/pages/manager/MenuManagementPage';
 import { ComplaintsManagementPage } from '@/pages/manager/ComplaintsManagementPage';
 import { BroadcastPage } from '@/pages/manager/BroadcastPage';
 import { BillingManagementPage } from '@/pages/manager/BillingManagementPage';
+import { NotesPage } from '@/pages/manager/NotesPage';
+import { GuestPaymentsPage } from '@/pages/manager/GuestPaymentsPage';
 // Admin imports
 import { AdminLayout } from '@/components/layout/AdminLayout';
 import { AdminDashboardPage } from '@/pages/admin/AdminDashboardPage';
@@ -71,6 +73,8 @@ const router = createBrowserRouter([
       { path: "complaints", element: <ComplaintsManagementPage /> },
       { path: "broadcast", element: <BroadcastPage /> },
       { path: "billing", element: <BillingManagementPage /> },
+      { path: "notes", element: <NotesPage /> },
+      { path: "guest-payments", element: <GuestPaymentsPage /> },
     ]
   },
   // Admin Routes
