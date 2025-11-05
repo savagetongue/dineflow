@@ -2,6 +2,9 @@ import { Hono } from "hono";
 import type { Env } from './core-utils';
 import { ok, bad, notFound } from './core-utils';
 import type { WeeklyMenu, Bill, Complaint, StudentDashboardSummary, Student, AuthResponse, StudentRegistrationData, MessSettings, AuthRequest } from "@shared/types";
+// --- IN-MEMORY OTP STORE ---
+const otpStore = new Map<string, { otp: string; expires: number }>();
+const OTP_EXPIRATION_MINUTES = 5; // OTPs are valid for 5 minutes
 // --- MOCK DATA ---
 const MOCK_MENU: WeeklyMenu = {
   Monday: { breakfast: ["Poha", "Jalebi"], lunch: ["Roti", "Dal Fry", "Rice", "Aloo Gobi"], dinner: ["Roti", "Paneer Butter Masala", "Rice"] },
@@ -89,15 +92,31 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
   app.post('/api/register/send-otp', async (c) => {
     const { email } = await c.req.json<{ email: string }>();
     if (!email) return bad(c, 'Email is required');
-    console.log(`Sending registration OTP to ${email}. Mock OTP is 654321.`);
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const expires = Date.now() + OTP_EXPIRATION_MINUTES * 60 * 1000;
+    otpStore.set(email, { otp, expires });
+    // For development/testing, we log the OTP since we can't send real emails.
+    console.log(`[OTP SENT] Email: ${email}, OTP: ${otp}`);
     return ok(c, { success: true, message: `OTP sent to ${email}` });
   });
   app.post('/api/register/verify-otp', async (c) => {
     const { email, otp } = await c.req.json<{ email: string, otp: string }>();
-    if (otp === '654321') {
-      return ok(c, { success: true, message: 'OTP verified successfully.' });
+    if (!email || !otp) {
+        return bad(c, 'Email and OTP are required.');
     }
-    return bad(c, 'Invalid OTP');
+    const storedOtpData = otpStore.get(email);
+    if (!storedOtpData) {
+        return bad(c, 'OTP not found or has expired. Please request a new one.');
+    }
+    if (Date.now() > storedOtpData.expires) {
+        otpStore.delete(email);
+        return bad(c, 'OTP has expired. Please request a new one.');
+    }
+    if (storedOtpData.otp === otp) {
+        otpStore.delete(email); // OTP is valid, remove it to prevent reuse
+        return ok(c, { success: true, message: 'OTP verified successfully.' });
+    }
+    return bad(c, 'Invalid OTP.');
   });
   app.post('/api/student/register', async (c) => {
     const data = await c.req.json<StudentRegistrationData>();
