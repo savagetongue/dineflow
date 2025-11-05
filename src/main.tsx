@@ -23,6 +23,8 @@ import { ManagerLayout } from '@/components/layout/ManagerLayout';
 import { DashboardPage as ManagerDashboardPage } from '@/pages/manager/DashboardPage';
 import { StudentManagementPage } from '@/pages/manager/StudentManagementPage';
 import { MenuManagementPage } from '@/pages/manager/MenuManagementPage';
+import { ComplaintsManagementPage } from '@/pages/manager/ComplaintsManagementPage';
+import { BroadcastPage } from '@/pages/manager/BroadcastPage';
 const router = createBrowserRouter([
   {
     path: "/",
@@ -50,6 +52,8 @@ const router = createBrowserRouter([
       { path: "dashboard", element: <ManagerDashboardPage /> },
       { path: "students", element: <StudentManagementPage /> },
       { path: "menu", element: <MenuManagementPage /> },
+      { path: "complaints", element: <ComplaintsManagementPage /> },
+      { path: "broadcast", element: <BroadcastPage /> },
     ]
   }
 ]);

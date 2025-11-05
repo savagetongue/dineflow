@@ -31,6 +31,10 @@ const MOCK_STUDENT_REQUESTS: (Student & { status: 'Pending' })[] = [
     { id: 'sr1', name: 'Kavita Iyer', email: 'kavita.iyer@example.com', phone: '9123456780', roomNumber: 'C-301', status: 'Pending' },
     { id: 'sr2', name: 'Suresh Kumar', email: 'suresh.kumar@example.com', phone: '9123456781', roomNumber: 'D-110', status: 'Pending' },
 ];
+let MOCK_BROADCASTS = [
+    { id: 'br1', message: 'The mess will be closed for dinner on Sunday, 25th August, for pest control maintenance. Inconvenience is regretted.', sentDate: '2024-08-23T11:00:00.000Z' },
+    { id: 'br2', message: 'Reminder: Please clear your monthly dues by the 5th of September to avoid late fees.', sentDate: '2024-08-20T15:30:00.000Z' },
+];
 export function userRoutes(app: Hono<{ Bindings: Env }>) {
   // --- STUDENT ROUTES ---
   app.get('/api/student/summary', (c) => {
@@ -72,16 +76,39 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
   app.post('/api/manager/student-requests/:id', async (c) => {
     const { id } = c.req.param();
     const { action } = await c.req.json<{ action: 'approve' | 'reject' | 'hold' }>();
-    // In a real app, you'd update the DB. Here we just return success.
     console.log(`Action: ${action} on student request ${id}`);
     return ok(c, { success: true, message: `Request ${id} has been ${action}d.` });
   });
   app.get('/api/manager/menu', (c) => ok(c, MOCK_MENU));
   app.put('/api/manager/menu', async (c) => {
     const updatedMenu = await c.req.json<WeeklyMenu>();
-    // In a real app, save this to the DB. Here we just log it.
     console.log("Received menu update:", updatedMenu);
-    // MOCK_MENU = updatedMenu; // This would update it in-memory for the worker instance
     return ok(c, { success: true, message: "Menu updated successfully." });
+  });
+  // New Communication Routes
+  app.get('/api/manager/complaints', (c) => ok(c, MOCK_COMPLAINTS));
+  app.post('/api/manager/complaints/:id/reply', async (c) => {
+    const { id } = c.req.param();
+    const { reply } = await c.req.json<{ reply: string }>();
+    const complaintIndex = MOCK_COMPLAINTS.findIndex(c => c.id === id);
+    if (complaintIndex === -1) return bad(c, 'Complaint not found', 404);
+    MOCK_COMPLAINTS[complaintIndex] = {
+        ...MOCK_COMPLAINTS[complaintIndex],
+        managerReply: reply,
+        status: 'In Progress', // Or logic to set to 'Resolved'
+    };
+    return ok(c, MOCK_COMPLAINTS[complaintIndex]);
+  });
+  app.get('/api/manager/broadcasts', (c) => ok(c, MOCK_BROADCASTS));
+  app.post('/api/manager/broadcast', async (c) => {
+    const { message } = await c.req.json<{ message: string }>();
+    if (!message) return bad(c, 'Message is required');
+    const newBroadcast = {
+        id: `br${MOCK_BROADCASTS.length + 1}`,
+        message,
+        sentDate: new Date().toISOString(),
+    };
+    MOCK_BROADCASTS.unshift(newBroadcast);
+    return ok(c, newBroadcast);
   });
 }
