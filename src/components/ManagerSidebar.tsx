@@ -28,7 +28,7 @@ const mainMenuItems = [
   { path: "/manager/menu", icon: Utensils, label: "Menu" },
 ];
 const communicationMenuItems = [
-  { path: "/manager/complaints", icon: MessageSquareWarning, label: "Complaints" },
+  { path: "/manager/complaints", icon: MessageSquareWarning, label: "Feedback" },
   { path: "/manager/broadcast", icon: Megaphone, label: "Broadcast" },
 ];
 const financialMenuItems = [

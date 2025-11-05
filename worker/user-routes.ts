@@ -1,7 +1,7 @@
 import { Hono } from "hono";
 import type { Env } from './core-utils';
 import { ok, bad, notFound } from './core-utils';
-import type { WeeklyMenu, Bill, Complaint, StudentDashboardSummary, Student, AuthResponse, StudentRegistrationData, MessSettings, AuthRequest } from "@shared/types";
+import type { WeeklyMenu, Bill, Complaint, StudentDashboardSummary, Student, AuthResponse, StudentRegistrationData, MessSettings, AuthRequest, Suggestion } from "@shared/types";
 // --- MOCK DATA ---
 const MOCK_MENU: WeeklyMenu = {
   Monday: { breakfast: ["Poha", "Jalebi"], lunch: ["Roti", "Dal Fry", "Rice", "Aloo Gobi"], dinner: ["Roti", "Paneer Butter Masala", "Rice"] },
@@ -21,6 +21,10 @@ let MOCK_COMPLAINTS: Complaint[] = [
   { id: 'c1', title: 'Water quality is poor', description: 'The water from the cooler tastes weird. Please check it.', status: 'Resolved', submittedDate: '2024-08-15T10:00:00.000Z', resolvedDate: '2024-08-16T12:00:00.000Z', managerReply: 'We have cleaned the water cooler and replaced the filter.' },
   { id: 'c2', title: 'Roti is not cooked properly', description: 'The rotis served today were half-cooked.', status: 'In Progress', submittedDate: '2024-08-20T13:00:00.000Z', managerReply: 'We are looking into this with the kitchen staff.' },
   { id: 'c3', title: 'Mess hall cleanliness', description: 'The tables were not clean during lunch time.', status: 'Pending', submittedDate: '2024-08-22T14:00:00.000Z' },
+];
+let MOCK_SUGGESTIONS: Suggestion[] = [
+    { id: 'sug1', text: 'Can we have a feedback box in the mess hall?', submittedDate: '2024-08-25T11:30:00.000Z', studentName: 'Priya Patel' },
+    { id: 'sug2', text: 'It would be great to have more variety in the Sunday special dinner.', submittedDate: '2024-08-26T15:00:00.000Z', studentName: 'Rohan Sharma' },
 ];
 let MOCK_STUDENTS: (Student & { password?: string })[] = [
     { id: 's1', name: 'Rohan Sharma', email: 'rohan.sharma@example.com', phone: '9876543210', roomNumber: 'A-101', password: 'password123' },
@@ -135,6 +139,19 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
     MOCK_COMPLAINTS.unshift(newComplaint);
     return ok(c, newComplaint);
   });
+  app.get('/api/student/suggestions', (c) => ok(c, MOCK_SUGGESTIONS));
+  app.post('/api/student/suggestions', async (c) => {
+    const { text } = await c.req.json<{ text: string }>();
+    if (!text) return bad(c, 'Suggestion text is required');
+    const newSuggestion: Suggestion = {
+        id: `sug${MOCK_SUGGESTIONS.length + 1}`,
+        text,
+        submittedDate: new Date().toISOString(),
+        studentName: 'Mock Student', // In a real app, get this from auth context
+    };
+    MOCK_SUGGESTIONS.unshift(newSuggestion);
+    return ok(c, newSuggestion);
+  });
   // --- MANAGER ROUTES ---
   app.get('/api/manager/stats', (c) => {
     const stats = {
@@ -146,6 +163,16 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
     return ok(c, stats);
   });
   app.get('/api/manager/students', (c) => ok(c, MOCK_STUDENTS));
+  app.put('/api/manager/students/:id', async (c) => {
+    const { id } = c.req.param();
+    const updatedData = await c.req.json<Omit<Student, 'id'>>();
+    const studentIndex = MOCK_STUDENTS.findIndex(s => s.id === id);
+    if (studentIndex === -1) {
+        return notFound(c, 'Student not found.');
+    }
+    MOCK_STUDENTS[studentIndex] = { ...MOCK_STUDENTS[studentIndex], ...updatedData };
+    return ok(c, MOCK_STUDENTS[studentIndex]);
+  });
   app.get('/api/manager/student-requests', (c) => ok(c, MOCK_STUDENT_REQUESTS));
   app.post('/api/manager/student-requests/:id', async (c) => {
     const { id } = c.req.param();
@@ -194,6 +221,7 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
     };
     return ok(c, MOCK_COMPLAINTS[complaintIndex]);
   });
+  app.get('/api/manager/suggestions', (c) => ok(c, MOCK_SUGGESTIONS));
   app.get('/api/manager/broadcasts', (c) => ok(c, MOCK_BROADCASTS));
   app.post('/api/manager/broadcast', async (c) => {
     const { message } = await c.req.json<{ message: string }>();

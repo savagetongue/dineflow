@@ -20,7 +20,7 @@ const menuItems = [
   { path: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
   { path: "/menu", icon: Utensils, label: "Weekly Menu" },
   { path: "/billing", icon: Receipt, label: "Billing" },
-  { path: "/complaints", icon: MessageSquareWarning, label: "Complaints" },
+  { path: "/complaints", icon: MessageSquareWarning, label: "Feedback" },
   { path: "/rules", icon: BookCheck, label: "Mess Rules" },
 ];
 export function StudentSidebar(): JSX.Element {
