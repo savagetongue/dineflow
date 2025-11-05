@@ -90,7 +90,7 @@ export function HomePage() {
           <div className="h-12 w-12 rounded-xl bg-indigo-600 flex items-center justify-center">
             <Utensils className="h-7 w-7 text-white" />
           </div>
-          <h1 className="text-4xl font-display font-bold">DineFlow</h1>
+          <h1 className="text-4xl font-display font-bold">Mess Connect</h1>
         </div>
         <p className="text-muted-foreground max-w-md text-center">
           A minimalist and modern subscription-based management system to streamline mess operations.

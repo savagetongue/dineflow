@@ -32,7 +32,7 @@ export function StudentSidebar(): JSX.Element {
           <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center">
             <Utensils className="h-5 w-5 text-white" />
           </div>
-          <span className="text-lg font-display font-semibold">DineFlow</span>
+          <span className="text-lg font-display font-semibold">Mess Connect</span>
         </div>
       </SidebarHeader>
       <SidebarContent className="flex-grow">

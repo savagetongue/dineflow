@@ -54,7 +54,7 @@ export function GuestPaymentPage() {
           <div className="h-12 w-12 rounded-xl bg-indigo-600 flex items-center justify-center">
             <Utensils className="h-7 w-7 text-white" />
           </div>
-          <h1 className="text-4xl font-display font-bold">DineFlow</h1>
+          <h1 className="text-4xl font-display font-bold">Mess Connect</h1>
         </div>
         <Card className="w-full max-w-sm">
           <CardHeader className="text-center">
