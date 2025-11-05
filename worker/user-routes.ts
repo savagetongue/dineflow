@@ -13,18 +13,18 @@ const MOCK_MENU: WeeklyMenu = {
   Sunday: { breakfast: ["Puri", "Sabzi"], lunch: ["Special Lunch"], dinner: ["Roti", "Aloo Matar", "Rice"] }
 };
 const MOCK_BILLS: Bill[] = [
-  { id: 'b1', month: 'August 2024', amount: 3500, status: 'Due', dueDate: '2024-09-05T00:00:00.000Z' },
-  { id: 'b2', month: 'July 2024', amount: 3500, status: 'Paid', dueDate: '2024-08-05T00:00:00.000Z', paidDate: '2024-08-02T00:00:00.000Z' },
-  { id: 'b3', month: 'June 2024', amount: 3200, status: 'Paid', dueDate: '2024-07-05T00:00:00.000Z', paidDate: '2024-07-01T00:00:00.000Z' },
+  { id: 'b1', month: 'August 2025', amount: 3500, status: 'Due', dueDate: '2025-09-05T00:00:00.000Z' },
+  { id: 'b2', month: 'July 2025', amount: 3500, status: 'Paid', dueDate: '2025-08-05T00:00:00.000Z', paidDate: '2025-08-02T00:00:00.000Z' },
+  { id: 'b3', month: 'June 2025', amount: 3200, status: 'Paid', dueDate: '2025-07-05T00:00:00.000Z', paidDate: '2025-07-01T00:00:00.000Z' },
 ];
 let MOCK_COMPLAINTS: Complaint[] = [
-  { id: 'c1', title: 'Water quality is poor', description: 'The water from the cooler tastes weird. Please check it.', status: 'Resolved', submittedDate: '2024-08-15T10:00:00.000Z', resolvedDate: '2024-08-16T12:00:00.000Z', managerReply: 'We have cleaned the water cooler and replaced the filter.' },
-  { id: 'c2', title: 'Roti is not cooked properly', description: 'The rotis served today were half-cooked.', status: 'In Progress', submittedDate: '2024-08-20T13:00:00.000Z', managerReply: 'We are looking into this with the kitchen staff.' },
-  { id: 'c3', title: 'Mess hall cleanliness', description: 'The tables were not clean during lunch time.', status: 'Pending', submittedDate: '2024-08-22T14:00:00.000Z' },
+  { id: 'c1', title: 'Water quality is poor', description: 'The water from the cooler tastes weird. Please check it.', status: 'Resolved', submittedDate: '2025-08-15T10:00:00.000Z', resolvedDate: '2025-08-16T12:00:00.000Z', managerReply: 'We have cleaned the water cooler and replaced the filter.' },
+  { id: 'c2', title: 'Roti is not cooked properly', description: 'The rotis served today were half-cooked.', status: 'In Progress', submittedDate: '2025-08-20T13:00:00.000Z', managerReply: 'We are looking into this with the kitchen staff.' },
+  { id: 'c3', title: 'Mess hall cleanliness', description: 'The tables were not clean during lunch time.', status: 'Pending', submittedDate: '2025-08-22T14:00:00.000Z' },
 ];
 let MOCK_SUGGESTIONS: Suggestion[] = [
-    { id: 'sug1', text: 'Can we have a feedback box in the mess hall?', submittedDate: '2024-08-25T11:30:00.000Z', studentName: 'Priya Patel' },
-    { id: 'sug2', text: 'It would be great to have more variety in the Sunday special dinner.', submittedDate: '2024-08-26T15:00:00.000Z', studentName: 'Rohan Sharma' },
+    { id: 'sug1', text: 'Can we have a feedback box in the mess hall?', submittedDate: '2025-08-25T11:30:00.000Z', studentName: 'Priya Patel' },
+    { id: 'sug2', text: 'It would be great to have more variety in the Sunday special dinner.', submittedDate: '2025-08-26T15:00:00.000Z', studentName: 'Rohan Sharma' },
 ];
 let MOCK_STUDENTS: (Student & { password?: string })[] = [
     { id: 's1', name: 'Rohan Sharma', email: 'rohan.sharma@example.com', phone: '9876543210', roomNumber: 'A-101', password: 'password123' },
@@ -37,13 +37,13 @@ let MOCK_STUDENT_REQUESTS: (StudentRegistrationData & { id: string; status: 'Pen
     { id: 'sr2', name: 'Suresh Kumar', email: 'suresh.kumar@example.com', phone: '9123456781', roomNumber: 'D-110', status: 'Pending', password: 'password123' },
 ];
 let MOCK_BROADCASTS = [
-    { id: 'br1', message: 'The mess will be closed for dinner on Sunday, 25th August, for pest control maintenance. Inconvenience is regretted.', sentDate: '2024-08-23T11:00:00.000Z' },
-    { id: 'br2', message: 'Reminder: Please clear your monthly dues by the 5th of September to avoid late fees.', sentDate: '2024-08-20T15:30:00.000Z' },
+    { id: 'br1', message: 'The mess will be closed for dinner on Sunday, 25th August, for pest control maintenance. Inconvenience is regretted.', sentDate: '2025-08-23T11:00:00.000Z' },
+    { id: 'br2', message: 'Reminder: Please clear your monthly dues by the 5th of September to avoid late fees.', sentDate: '2025-08-20T15:30:00.000Z' },
 ];
 const MOCK_GUEST_PAYMENTS = [
-    { id: 'gp1', name: 'Visitor A', phone: '8888888880', amount: 75, paymentDate: '2024-08-28T13:05:00.000Z' },
-    { id: 'gp2', name: 'Visitor B', phone: '8888888881', amount: 75, paymentDate: '2024-08-28T19:15:00.000Z' },
-    { id: 'gp3', name: 'Visitor C', phone: '8888888882', amount: 75, paymentDate: '2024-08-29T12:55:00.000Z' },
+    { id: 'gp1', name: 'Visitor A', phone: '8888888880', amount: 75, paymentDate: '2025-08-28T13:05:00.000Z' },
+    { id: 'gp2', name: 'Visitor B', phone: '8888888881', amount: 75, paymentDate: '2025-08-28T19:15:00.000Z' },
+    { id: 'gp3', name: 'Visitor C', phone: '8888888882', amount: 75, paymentDate: '2025-08-29T12:55:00.000Z' },
 ];
 let MOCK_SETTINGS: MessSettings = {
     monthlyAmount: 3500,
@@ -67,6 +67,10 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
         user: { id: student.id, name: student.name, email: student.email },
       };
       return ok(c, response);
+    }
+    const pendingRequest = MOCK_STUDENT_REQUESTS.find(req => req.email === email);
+    if (pendingRequest) {
+        return bad(c, 'Your account is pending manager approval.', 403);
     }
     return bad(c, 'Invalid email or password', 401);
   });
@@ -117,7 +121,7 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
   // --- STUDENT ROUTES ---
   app.get('/api/student/summary', (c) => {
     const summary: StudentDashboardSummary = {
-      currentDue: { amount: MOCK_SETTINGS.monthlyAmount, dueDate: '2024-09-05T00:00:00.000Z' },
+      currentDue: { amount: MOCK_SETTINGS.monthlyAmount, dueDate: '2025-09-05T00:00:00.000Z' },
       todaysMenu: MOCK_MENU.Wednesday, // Assuming today is Wednesday for mock
       recentComplaints: MOCK_COMPLAINTS.slice(0, 2).map(({ id, title, status }) => ({ id, title, status })),
     };
@@ -237,14 +241,14 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
   app.get('/api/manager/billing-overview', (c) => {
     const overview = {
         unpaid: [
-            { student: { id: 's1', name: 'Rohan Sharma', roomNumber: 'A-101' }, id: 'b-s1', month: 'August 2024', amount: MOCK_SETTINGS.monthlyAmount, status: 'Due', dueDate: '2024-09-05T00:00:00.000Z' }
+            { student: { id: 's1', name: 'Rohan Sharma', roomNumber: 'A-101' }, id: 'b-s1', month: 'August 2025', amount: MOCK_SETTINGS.monthlyAmount, status: 'Due', dueDate: '2025-09-05T00:00:00.000Z' }
         ],
         paid: [
-            { student: { id: 's2', name: 'Priya Patel', roomNumber: 'B-204' }, id: 'b-s2', month: 'August 2024', amount: MOCK_SETTINGS.monthlyAmount, status: 'Paid', dueDate: '2024-09-05T00:00:00.000Z', paidDate: '2024-08-28T00:00:00.000Z' },
-            { student: { id: 's3', name: 'Amit Singh', roomNumber: 'A-102' }, id: 'b-s3', month: 'August 2024', amount: MOCK_SETTINGS.monthlyAmount, status: 'Paid', dueDate: '2024-09-05T00:00:00.000Z', paidDate: '2024-08-29T00:00:00.000Z' },
+            { student: { id: 's2', name: 'Priya Patel', roomNumber: 'B-204' }, id: 'b-s2', month: 'August 2025', amount: MOCK_SETTINGS.monthlyAmount, status: 'Paid', dueDate: '2025-09-05T00:00:00.000Z', paidDate: '2025-08-28T00:00:00.000Z' },
+            { student: { id: 's3', name: 'Amit Singh', roomNumber: 'A-102' }, id: 'b-s3', month: 'August 2025', amount: MOCK_SETTINGS.monthlyAmount, status: 'Paid', dueDate: '2025-09-05T00:00:00.000Z', paidDate: '2025-08-29T00:00:00.000Z' },
         ],
         overdue: [
-            { student: { id: 's4', name: 'Sunita Gupta', roomNumber: 'C-401' }, id: 'b-s4', month: 'July 2024', amount: 3200, status: 'Overdue', dueDate: '2024-08-05T00:00:00.000Z' }
+            { student: { id: 's4', name: 'Sunita Gupta', roomNumber: 'C-401' }, id: 'b-s4', month: 'July 2025', amount: 3200, status: 'Overdue', dueDate: '2025-08-05T00:00:00.000Z' }
         ],
     };
     return ok(c, overview);

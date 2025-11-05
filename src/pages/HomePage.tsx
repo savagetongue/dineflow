@@ -42,9 +42,15 @@ export function HomePage() {
       toast.success(`Welcome, ${data.user.name}!`);
       navigate("/dashboard");
     } catch (error) {
-      toast.error("Login Failed", {
-        description: error instanceof Error ? error.message : "Invalid credentials.",
-      });
+      if (error instanceof Error && error.message.includes('pending manager approval')) {
+        toast.warning("Login Pending", {
+          description: "Your account is awaiting approval from the manager. Please try again later.",
+        });
+      } else {
+        toast.error("Login Failed", {
+          description: error instanceof Error ? error.message : "Invalid credentials.",
+        });
+      }
     } finally {
       setIsLoading(false);
     }

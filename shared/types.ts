@@ -33,7 +33,7 @@ export type WeeklyMenu = Record<DayOfWeek, MenuItem>;
 export type BillStatus = 'Paid' | 'Due' | 'Overdue';
 export interface Bill {
   id: string;
-  month: string; // e.g., "July 2024"
+  month: string; // e.g., "July 2025"
   amount: number;
   status: BillStatus;
   dueDate: string; // ISO string
@@ -55,6 +55,7 @@ export interface Suggestion {
   id: string;
   text: string;
   submittedDate: string; // ISO string
+  studentName: string;
 }
 // Dashboard specific types
 export interface StudentDashboardSummary {
