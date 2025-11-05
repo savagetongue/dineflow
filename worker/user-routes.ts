@@ -1,6 +1,6 @@
 import { Hono } from "hono";
 import type { Env } from './core-utils';
-import { ok, bad } from './core-utils';
+import { ok, bad, notFound } from './core-utils';
 import type { WeeklyMenu, Bill, Complaint, StudentDashboardSummary, Student } from "@shared/types";
 // --- MOCK DATA ---
 const MOCK_MENU: WeeklyMenu = {
@@ -26,6 +26,7 @@ const MOCK_STUDENTS: Student[] = [
     { id: 's1', name: 'Rohan Sharma', email: 'rohan.sharma@example.com', phone: '9876543210', roomNumber: 'A-101' },
     { id: 's2', name: 'Priya Patel', email: 'priya.patel@example.com', phone: '9876543211', roomNumber: 'B-204' },
     { id: 's3', name: 'Amit Singh', email: 'amit.singh@example.com', phone: '9876543212', roomNumber: 'A-102' },
+    { id: 's4', name: 'Sunita Gupta', email: 'sunita.gupta@example.com', phone: '9876543213', roomNumber: 'C-401' },
 ];
 const MOCK_STUDENT_REQUESTS: (Student & { status: 'Pending' })[] = [
     { id: 'sr1', name: 'Kavita Iyer', email: 'kavita.iyer@example.com', phone: '9123456780', roomNumber: 'C-301', status: 'Pending' },
@@ -85,17 +86,16 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
     console.log("Received menu update:", updatedMenu);
     return ok(c, { success: true, message: "Menu updated successfully." });
   });
-  // New Communication Routes
   app.get('/api/manager/complaints', (c) => ok(c, MOCK_COMPLAINTS));
   app.post('/api/manager/complaints/:id/reply', async (c) => {
     const { id } = c.req.param();
     const { reply } = await c.req.json<{ reply: string }>();
     const complaintIndex = MOCK_COMPLAINTS.findIndex(c => c.id === id);
-    if (complaintIndex === -1) return bad(c, 'Complaint not found', 404);
+    if (complaintIndex === -1) return notFound(c, 'Complaint not found');
     MOCK_COMPLAINTS[complaintIndex] = {
         ...MOCK_COMPLAINTS[complaintIndex],
         managerReply: reply,
-        status: 'In Progress', // Or logic to set to 'Resolved'
+        status: 'In Progress',
     };
     return ok(c, MOCK_COMPLAINTS[complaintIndex]);
   });
@@ -110,5 +110,25 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
     };
     MOCK_BROADCASTS.unshift(newBroadcast);
     return ok(c, newBroadcast);
+  });
+  app.get('/api/manager/billing-overview', (c) => {
+    const overview = {
+        unpaid: [
+            { student: { id: 's1', name: 'Rohan Sharma', roomNumber: 'A-101' }, id: 'b-s1', month: 'August 2024', amount: 3500, status: 'Due', dueDate: '2024-09-05T00:00:00.000Z' }
+        ],
+        paid: [
+            { student: { id: 's2', name: 'Priya Patel', roomNumber: 'B-204' }, id: 'b-s2', month: 'August 2024', amount: 3500, status: 'Paid', dueDate: '2024-09-05T00:00:00.000Z', paidDate: '2024-08-28T00:00:00.000Z' },
+            { student: { id: 's3', name: 'Amit Singh', roomNumber: 'A-102' }, id: 'b-s3', month: 'August 2024', amount: 3500, status: 'Paid', dueDate: '2024-09-05T00:00:00.000Z', paidDate: '2024-08-29T00:00:00.000Z' },
+        ],
+        overdue: [
+            { student: { id: 's4', name: 'Sunita Gupta', roomNumber: 'C-401' }, id: 'b-s4', month: 'July 2024', amount: 3200, status: 'Overdue', dueDate: '2024-08-05T00:00:00.000Z' }
+        ],
+    };
+    return ok(c, overview);
+  });
+  // --- ADMIN ROUTES ---
+  app.get('/api/admin/complaints', (c) => {
+    // Admin gets all complaints
+    return ok(c, MOCK_COMPLAINTS);
   });
 }

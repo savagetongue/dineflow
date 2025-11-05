@@ -4,7 +4,6 @@ import {
   Utensils,
   MessageSquareWarning,
   LogOut,
-  Settings,
   Wallet,
   Megaphone,
 } from "lucide-react";

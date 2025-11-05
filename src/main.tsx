@@ -25,6 +25,10 @@ import { StudentManagementPage } from '@/pages/manager/StudentManagementPage';
 import { MenuManagementPage } from '@/pages/manager/MenuManagementPage';
 import { ComplaintsManagementPage } from '@/pages/manager/ComplaintsManagementPage';
 import { BroadcastPage } from '@/pages/manager/BroadcastPage';
+import { BillingManagementPage } from '@/pages/manager/BillingManagementPage';
+// Admin imports
+import { AdminLayout } from '@/components/layout/AdminLayout';
+import { AdminDashboardPage } from '@/pages/admin/AdminDashboardPage';
 const router = createBrowserRouter([
   {
     path: "/",
@@ -54,6 +58,19 @@ const router = createBrowserRouter([
       { path: "menu", element: <MenuManagementPage /> },
       { path: "complaints", element: <ComplaintsManagementPage /> },
       { path: "broadcast", element: <BroadcastPage /> },
+      { path: "billing", element: <BillingManagementPage /> },
+    ]
+  },
+  // Admin Routes
+  {
+    path: "/admin",
+    element: <AdminLayout />,
+    errorElement: <RouteErrorBoundary />,
+    children: [
+      { index: true, element: <Navigate to="/admin/dashboard" replace /> },
+      { path: "dashboard", element: <AdminDashboardPage /> },
+      // A read-only menu page for admin can be added here. For now, linking to student's menu page.
+      { path: "menu", element: <StudentMenuPage /> },
     ]
   }
 ]);
