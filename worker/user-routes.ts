@@ -64,7 +64,6 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
   });
   // --- GUEST & PUBLIC ROUTES ---
   app.post('/api/guest/pay', (c) => ok(c, { success: true, message: 'Payment successful' }));
-  app.post('/api/upload', (c) => ok(c, { url: 'https://images.unsplash.com/photo-1589302168068-964664d93dc0?q=80&w=800' }));
   app.get('/api/settings', async (c) => ok(c, await new SettingsEntity(c.env).getState()));
   // --- STUDENT ROUTES ---
   app.get('/api/student/summary', async (c) => {
@@ -93,7 +92,7 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
       description,
       status: 'Pending',
       submittedDate: new Date().toISOString(),
-      imageUrl: image instanceof File ? 'https://images.unsplash.com/photo-1589302168068-964664d93dc0?q=80&w=800' : undefined,
+      imageUrl: image instanceof File ? 'https://images.unsplash.com/photo-1620706857373-180de2546306?q=80&w=800' : undefined,
     };
     await ComplaintEntity.create(c.env, newComplaint);
     return ok(c, newComplaint);
