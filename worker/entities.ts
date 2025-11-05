@@ -1,4 +1,4 @@
-import { Entity, IndexedEntity, Env } from "./core-utils";
+import { IndexedEntity, Env } from "./core-utils";
 import type {
   MessSettings,
   WeeklyMenu,
@@ -6,16 +6,20 @@ import type {
   StudentRegistrationData,
   Complaint,
   Suggestion,
-  Bill 
+  Bill,
+  BroadcastMessage,
+  GuestPayment
 } from "@shared/types";
-export class SettingsEntity extends Entity<MessSettings> {
+export class SettingsEntity extends IndexedEntity<MessSettings & { id: string }> {
   static readonly entityName = "settings";
-  static readonly initialState: MessSettings = { monthlyAmount: 0, rules: [] };
+  static readonly indexName = "settings";
+  static readonly initialState: MessSettings & { id: string } = { id: "singleton", monthlyAmount: 0, rules: [] };
   constructor(env: Env) {super(env, "singleton");}
 }
-export class MenuEntity extends Entity<WeeklyMenu> {
+export class MenuEntity extends IndexedEntity<WeeklyMenu & { id: string }> {
   static readonly entityName = "menu";
-  static readonly initialState: WeeklyMenu = { Monday: { breakfast: [], lunch: [], dinner: [] }, Tuesday: { breakfast: [], lunch: [], dinner: [] }, Wednesday: { breakfast: [], lunch: [], dinner: [] }, Thursday: { breakfast: [], lunch: [], dinner: [] }, Friday: { breakfast: [], lunch: [], dinner: [] }, Saturday: { breakfast: [], lunch: [], dinner: [] }, Sunday: { breakfast: [], lunch: [], dinner: [] } };
+  static readonly indexName = "menu";
+  static readonly initialState: WeeklyMenu & { id: string } = { id: "singleton", Monday: { breakfast: [], lunch: [], dinner: [] }, Tuesday: { breakfast: [], lunch: [], dinner: [] }, Wednesday: { breakfast: [], lunch: [], dinner: [] }, Thursday: { breakfast: [], lunch: [], dinner: [] }, Friday: { breakfast: [], lunch: [], dinner: [] }, Saturday: { breakfast: [], lunch: [], dinner: [] }, Sunday: { breakfast: [], lunch: [], dinner: [] } };
   constructor(env: Env) {super(env, "singleton");}
 }
 export class StudentEntity extends IndexedEntity<Student & {password?: string;}> {
@@ -43,11 +47,13 @@ export class BillEntity extends IndexedEntity<Bill> {
   static readonly indexName = "bills";
   static readonly initialState: Bill = { id: "", studentId: "", month: "", amount: 0, status: "Due", dueDate: "" };
 }
-export class BroadcastEntity extends Entity<{id: string;message: string;sentDate: string;}> {
+export class BroadcastEntity extends IndexedEntity<BroadcastMessage> {
   static readonly entityName = "broadcast";
-  static readonly initialState = { id: "", message: "", sentDate: "" };
+  static readonly indexName = "broadcasts";
+  static readonly initialState: BroadcastMessage = { id: "", message: "", sentDate: "" };
 }
-export class GuestPaymentEntity extends Entity<{id: string;name: string;phone: string;amount: number;paymentDate: string;}> {
+export class GuestPaymentEntity extends IndexedEntity<GuestPayment> {
   static readonly entityName = "guestPayment";
-  static readonly initialState = { id: "", name: "", phone: "", amount: 0, paymentDate: "" };
+  static readonly indexName = "guestPayments";
+  static readonly initialState: GuestPayment = { id: "", name: "", phone: "", amount: 0, paymentDate: "" };
 }

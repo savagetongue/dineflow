@@ -9,6 +9,8 @@ import {
   ComplaintEntity,
   SuggestionEntity,
   BillEntity,
+  GuestPaymentEntity,
+  BroadcastEntity,
 } from './entities';
 import type {
   WeeklyMenu,
@@ -20,7 +22,9 @@ import type {
   StudentRegistrationData,
   MessSettings,
   AuthRequest,
-  Suggestion
+  Suggestion,
+  GuestPayment,
+  BroadcastMessage,
 } from "@shared/types";
 export function userRoutes(app: Hono<{ Bindings: Env }>) {
   // --- AUTHENTICATION & REGISTRATION ROUTES ---
@@ -63,8 +67,23 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
     return ok(c, { success: true, message: 'Registration successful! Your request is pending approval.' });
   });
   // --- GUEST & PUBLIC ROUTES ---
-  app.post('/api/guest/pay', (c) => ok(c, { success: true, message: 'Payment successful' }));
-  app.get('/api/settings', async (c) => ok(c, await new SettingsEntity(c.env).getState()));
+  app.post('/api/guest/pay', async (c) => {
+    const { name, phone, amount } = await c.req.json<{ name: string, phone: string, amount: number }>();
+    if (!isStr(name) || !isStr(phone)) return bad(c, 'Name and phone are required');
+    const newPayment: GuestPayment = {
+      id: crypto.randomUUID(),
+      name,
+      phone,
+      amount,
+      paymentDate: new Date().toISOString(),
+    };
+    await GuestPaymentEntity.create(c.env, newPayment);
+    return ok(c, { success: true, message: 'Payment successful' });
+  });
+  app.get('/api/settings', async (c) => {
+    const settingsEntity = new SettingsEntity(c.env);
+    return ok(c, await settingsEntity.getState());
+  });
   // --- STUDENT ROUTES ---
   app.get('/api/student/summary', async (c) => {
     const settings = await new SettingsEntity(c.env).getState();
@@ -159,7 +178,8 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
   app.get('/api/manager/menu', async (c) => ok(c, await new MenuEntity(c.env).getState()));
   app.put('/api/manager/menu', async (c) => {
     const updatedMenu = await c.req.json<WeeklyMenu>();
-    await new MenuEntity(c.env).save(updatedMenu);
+    const menuEntity = new MenuEntity(c.env);
+    await menuEntity.patch(updatedMenu);
     return ok(c, { success: true, message: "Menu updated successfully." });
   });
   app.get('/api/manager/complaints', async (c) => ok(c, (await ComplaintEntity.list(c.env)).items.sort((a, b) => new Date(b.submittedDate).getTime() - new Date(a.submittedDate).getTime())));
@@ -172,10 +192,25 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
     return ok(c, await complaintEntity.getState());
   });
   app.get('/api/manager/suggestions', async (c) => ok(c, (await SuggestionEntity.list(c.env)).items.sort((a, b) => new Date(b.submittedDate).getTime() - new Date(a.submittedDate).getTime())));
-  // Mocked for now as no entity exists
-  app.get('/api/manager/broadcasts', (c) => ok(c, []));
-  app.post('/api/manager/broadcast', (c) => ok(c, { id: 'br-new', message: 'Broadcast sent', sentDate: new Date().toISOString() }));
-  app.get('/api/manager/guest-payments', (c) => ok(c, []));
+  app.get('/api/manager/broadcasts', async (c) => {
+    const { items } = await BroadcastEntity.list(c.env);
+    return ok(c, items.sort((a, b) => new Date(b.sentDate).getTime() - new Date(a.sentDate).getTime()));
+  });
+  app.post('/api/manager/broadcast', async (c) => {
+    const { message } = await c.req.json<{ message: string }>();
+    if (!isStr(message)) return bad(c, 'Message is required');
+    const newBroadcast: BroadcastMessage = {
+      id: crypto.randomUUID(),
+      message,
+      sentDate: new Date().toISOString(),
+    };
+    await BroadcastEntity.create(c.env, newBroadcast);
+    return ok(c, newBroadcast);
+  });
+  app.get('/api/manager/guest-payments', async (c) => {
+    const { items } = await GuestPaymentEntity.list(c.env);
+    return ok(c, items.sort((a, b) => new Date(b.paymentDate).getTime() - new Date(a.paymentDate).getTime()));
+  });
   app.get('/api/manager/billing-overview', async (c) => {
     const { items: students } = await StudentEntity.list(c.env);
     const { items: bills } = await BillEntity.list(c.env);
@@ -193,8 +228,9 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
   });
   app.put('/api/manager/settings', async (c) => {
     const newSettings = await c.req.json<MessSettings>();
-    await new SettingsEntity(c.env).save(newSettings);
-    return ok(c, newSettings);
+    const settingsEntity = new SettingsEntity(c.env);
+    await settingsEntity.patch(newSettings);
+    return ok(c, await settingsEntity.getState());
   });
   // --- ADMIN ROUTES ---
   app.get('/api/admin/complaints', async (c) => ok(c, (await ComplaintEntity.list(c.env)).items.sort((a, b) => new Date(b.submittedDate).getTime() - new Date(a.submittedDate).getTime())));

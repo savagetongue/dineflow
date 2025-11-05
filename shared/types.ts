@@ -91,3 +91,16 @@ export interface MessSettings {
   monthlyAmount: number;
   rules: string[];
 }
+// Guest & Broadcast
+export interface GuestPayment {
+  id: string;
+  name: string;
+  phone: string;
+  amount: number;
+  paymentDate: string; // ISO string
+}
+export interface BroadcastMessage {
+  id: string;
+  message: string;
+  sentDate: string; // ISO string
+}
