@@ -83,7 +83,6 @@ export type StudentRegistrationData = Omit<Student, 'id'> & { password?: string 
 export interface AuthRequest {
   email: string;
   password?: string;
-  otp?: string;
 }
 // Mess Settings
 export interface MessSettings {

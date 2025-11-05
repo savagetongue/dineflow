@@ -34,10 +34,10 @@ import {
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { api } from "@/lib/api-client";
-import type { Student } from "@shared/types";
+import type { Student, StudentRegistrationData } from "@shared/types";
 import { AlertCircle, MoreHorizontal, Check, X, Trash2 } from "lucide-react";
 import { toast } from "sonner";
-type StudentRequest = Student & { status: 'Pending' };
+type StudentRequest = StudentRegistrationData & { id: string; status: 'Pending' };
 type AllStudents = Student;
 export function StudentManagementPage() {
   const [requests, setRequests] = useState<StudentRequest[]>([]);
@@ -45,29 +45,50 @@ export function StudentManagementPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [studentToRemove, setStudentToRemove] = useState<AllStudents | null>(null);
+  const fetchData = async () => {
+    try {
+      setLoading(true);
+      const [reqData, studentData] = await Promise.all([
+        api<StudentRequest[]>("/api/manager/student-requests"),
+        api<AllStudents[]>("/api/manager/students"),
+      ]);
+      setRequests(reqData);
+      setStudents(studentData);
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : "Failed to load student data."
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setLoading(true);
-        const [reqData, studentData] = await Promise.all([
-          api<StudentRequest[]>("/api/manager/student-requests"),
-          api<AllStudents[]>("/api/manager/students"),
-        ]);
-        setRequests(reqData);
-        setStudents(studentData);
-      } catch (err) {
-        setError(
-          err instanceof Error ? err.message : "Failed to load student data."
-        );
-      } finally {
-        setLoading(false);
-      }
-    };
     fetchData();
   }, []);
-  const handleRequestAction = (requestId: string, action: 'approve' | 'reject' | 'hold') => {
-    toast.success(`Student request ${action}d successfully.`);
-    setRequests(requests.filter(req => req.id !== requestId));
+  const handleRequestAction = async (requestId: string, action: 'approve' | 'reject') => {
+    try {
+      const response = await api<{ success: boolean, message: string }>(`/api/manager/student-requests/${requestId}`, {
+        method: 'POST',
+        body: JSON.stringify({ action }),
+      });
+      toast.success(response.message);
+      if (action === 'approve') {
+        const approvedRequest = requests.find(req => req.id === requestId);
+        if (approvedRequest) {
+          const newStudent: AllStudents = {
+            id: `s${students.length + 5}`, // Mock ID generation
+            name: approvedRequest.name,
+            email: approvedRequest.email,
+            phone: approvedRequest.phone,
+            roomNumber: approvedRequest.roomNumber,
+          };
+          setStudents(prev => [...prev, newStudent]);
+        }
+      }
+      setRequests(prev => prev.filter(req => req.id !== requestId));
+    } catch (err) {
+      toast.error(`Failed to ${action} request.`);
+    }
   };
   const handleRemoveStudent = () => {
     if (!studentToRemove) return;

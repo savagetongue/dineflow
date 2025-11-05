@@ -2,9 +2,6 @@ import { Hono } from "hono";
 import type { Env } from './core-utils';
 import { ok, bad, notFound } from './core-utils';
 import type { WeeklyMenu, Bill, Complaint, StudentDashboardSummary, Student, AuthResponse, StudentRegistrationData, MessSettings, AuthRequest } from "@shared/types";
-// --- IN-MEMORY OTP STORE ---
-const otpStore = new Map<string, { otp: string; expires: number }>();
-const OTP_EXPIRATION_MINUTES = 5; // OTPs are valid for 5 minutes
 // --- MOCK DATA ---
 const MOCK_MENU: WeeklyMenu = {
   Monday: { breakfast: ["Poha", "Jalebi"], lunch: ["Roti", "Dal Fry", "Rice", "Aloo Gobi"], dinner: ["Roti", "Paneer Butter Masala", "Rice"] },
@@ -25,15 +22,15 @@ let MOCK_COMPLAINTS: Complaint[] = [
   { id: 'c2', title: 'Roti is not cooked properly', description: 'The rotis served today were half-cooked.', status: 'In Progress', submittedDate: '2024-08-20T13:00:00.000Z', managerReply: 'We are looking into this with the kitchen staff.' },
   { id: 'c3', title: 'Mess hall cleanliness', description: 'The tables were not clean during lunch time.', status: 'Pending', submittedDate: '2024-08-22T14:00:00.000Z' },
 ];
-const MOCK_STUDENTS: (Student & { password?: string })[] = [
+let MOCK_STUDENTS: (Student & { password?: string })[] = [
     { id: 's1', name: 'Rohan Sharma', email: 'rohan.sharma@example.com', phone: '9876543210', roomNumber: 'A-101', password: 'password123' },
-    { id: 's2', name: 'Priya Patel', email: 'priya.patel@example.com', phone: '9876543211', roomNumber: 'B-204' },
-    { id: 's3', name: 'Amit Singh', email: 'amit.singh@example.com', phone: '9876543212', roomNumber: 'A-102' },
-    { id: 's4', name: 'Sunita Gupta', email: 'sunita.gupta@example.com', phone: '9876543213', roomNumber: 'C-401' },
+    { id: 's2', name: 'Priya Patel', email: 'priya.patel@example.com', phone: '9876543211', roomNumber: 'B-204', password: 'password123' },
+    { id: 's3', name: 'Amit Singh', email: 'amit.singh@example.com', phone: '9876543212', roomNumber: 'A-102', password: 'password123' },
+    { id: 's4', name: 'Sunita Gupta', email: 'sunita.gupta@example.com', phone: '9876543213', roomNumber: 'C-401', password: 'password123' },
 ];
-let MOCK_STUDENT_REQUESTS: (Student & { status: 'Pending' })[] = [
-    { id: 'sr1', name: 'Kavita Iyer', email: 'kavita.iyer@example.com', phone: '9123456780', roomNumber: 'C-301', status: 'Pending' },
-    { id: 'sr2', name: 'Suresh Kumar', email: 'suresh.kumar@example.com', phone: '9123456781', roomNumber: 'D-110', status: 'Pending' },
+let MOCK_STUDENT_REQUESTS: (StudentRegistrationData & { id: string; status: 'Pending' })[] = [
+    { id: 'sr1', name: 'Kavita Iyer', email: 'kavita.iyer@example.com', phone: '9123456780', roomNumber: 'C-301', status: 'Pending', password: 'password123' },
+    { id: 'sr2', name: 'Suresh Kumar', email: 'suresh.kumar@example.com', phone: '9123456781', roomNumber: 'D-110', status: 'Pending', password: 'password123' },
 ];
 let MOCK_BROADCASTS = [
     { id: 'br1', message: 'The mess will be closed for dinner on Sunday, 25th August, for pest control maintenance. Inconvenience is regretted.', sentDate: '2024-08-23T11:00:00.000Z' },
@@ -89,51 +86,18 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
     }
     return bad(c, 'Invalid credentials', 401);
   });
-  app.post('/api/register/send-otp', async (c) => {
-    const { email } = await c.req.json<{ email: string }>();
-    if (!email) return bad(c, 'Email is required');
-    const otp = Math.floor(100000 + Math.random() * 900000).toString();
-    const expires = Date.now() + OTP_EXPIRATION_MINUTES * 60 * 1000;
-    otpStore.set(email, { otp, expires });
-    // For development/testing, we log the OTP since we can't send real emails.
-    console.log(`[OTP SENT] Email: ${email}, OTP: ${otp}`);
-    return ok(c, { success: true, message: `OTP sent to ${email}` });
-  });
-  app.post('/api/register/verify-otp', async (c) => {
-    const { email, otp } = await c.req.json<{ email: string, otp: string }>();
-    if (!email || !otp) {
-        return bad(c, 'Email and OTP are required.');
-    }
-    const storedOtpData = otpStore.get(email);
-    if (!storedOtpData) {
-        return bad(c, 'OTP not found or has expired. Please request a new one.');
-    }
-    if (Date.now() > storedOtpData.expires) {
-        otpStore.delete(email);
-        return bad(c, 'OTP has expired. Please request a new one.');
-    }
-    if (storedOtpData.otp === otp) {
-        otpStore.delete(email); // OTP is valid, remove it to prevent reuse
-        return ok(c, { success: true, message: 'OTP verified successfully.' });
-    }
-    return bad(c, 'Invalid OTP.');
-  });
   app.post('/api/student/register', async (c) => {
     const data = await c.req.json<StudentRegistrationData>();
     if (!data.name || !data.email || !data.phone || !data.roomNumber || !data.password) {
         return bad(c, 'All fields are required.');
     }
     const newRequest = {
-        name: data.name,
-        email: data.email,
-        phone: data.phone,
-        roomNumber: data.roomNumber,
+        ...data,
         id: `sr${MOCK_STUDENT_REQUESTS.length + 3}`, // a unique ID
         status: 'Pending' as const,
     };
     MOCK_STUDENT_REQUESTS.push(newRequest);
     console.log('New student request received:', newRequest);
-    console.log('Password received (for mock purposes):', data.password);
     return ok(c, { success: true, message: 'Registration successful! Your request is pending approval.' });
   });
   // --- GUEST ROUTES ---
@@ -186,7 +150,29 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
   app.post('/api/manager/student-requests/:id', async (c) => {
     const { id } = c.req.param();
     const { action } = await c.req.json<{ action: 'approve' | 'reject' | 'hold' }>();
-    console.log(`Action: ${action} on student request ${id}`);
+    const requestIndex = MOCK_STUDENT_REQUESTS.findIndex(req => req.id === id);
+    if (requestIndex === -1) {
+        return notFound(c, 'Student request not found.');
+    }
+    if (action === 'approve') {
+        const request = MOCK_STUDENT_REQUESTS[requestIndex];
+        const newStudent: Student & { password?: string } = {
+            id: `s${MOCK_STUDENTS.length + 5}`, // a unique ID
+            name: request.name,
+            email: request.email,
+            phone: request.phone,
+            roomNumber: request.roomNumber,
+            password: request.password,
+        };
+        MOCK_STUDENTS.push(newStudent);
+        MOCK_STUDENT_REQUESTS.splice(requestIndex, 1);
+        return ok(c, { success: true, message: `Request for ${request.name} has been approved.` });
+    }
+    if (action === 'reject') {
+        const request = MOCK_STUDENT_REQUESTS[requestIndex];
+        MOCK_STUDENT_REQUESTS.splice(requestIndex, 1);
+        return ok(c, { success: true, message: `Request for ${request.name} has been rejected.` });
+    }
     return ok(c, { success: true, message: `Request ${id} has been ${action}d.` });
   });
   app.get('/api/manager/menu', (c) => ok(c, MOCK_MENU));
