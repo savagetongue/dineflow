@@ -53,7 +53,7 @@ export function SettingsPage() {
     setIsSaving(true);
     try {
       await api("/api/manager/settings", {
-        method: "POST",
+        method: "PUT",
         body: JSON.stringify(settings),
       });
       toast.success("Settings saved successfully!");

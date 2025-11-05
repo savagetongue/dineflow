@@ -57,20 +57,7 @@ export function StudentManagementPage() {
         body: JSON.stringify({ action }),
       });
       toast.success(response.message);
-      if (action === 'approve') {
-        const approvedRequest = requests.find(req => req.id === requestId);
-        if (approvedRequest) {
-          const newStudent: AllStudents = {
-            id: `s${students.length + 5}`, // Mock ID generation
-            name: approvedRequest.name,
-            email: approvedRequest.email,
-            phone: approvedRequest.phone,
-            roomNumber: approvedRequest.roomNumber,
-          };
-          setStudents(prev => [...prev, newStudent]);
-        }
-      }
-      setRequests(prev => prev.filter(req => req.id !== requestId));
+      await fetchData(); // Refetch data to ensure consistency
     } catch (err) {
       toast.error(`Failed to ${action} request.`);
     }

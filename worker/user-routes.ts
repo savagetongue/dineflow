@@ -22,27 +22,7 @@ import type {
   AuthRequest,
   Suggestion
 } from "@shared/types";
-let seeded = false;
-async function seedDatabase(env: Env) {
-  if (seeded) return;
-  console.log("Attempting to seed database...");
-  await SettingsEntity.create(env, SettingsEntity.seedData);
-  await MenuEntity.create(env, MenuEntity.seedData);
-  await Promise.all(StudentEntity.seedData.map(s => StudentEntity.create(env, s)));
-  await Promise.all(StudentRequestEntity.seedData.map(s => StudentRequestEntity.create(env, s)));
-  await Promise.all(ComplaintEntity.seedData.map(c => ComplaintEntity.create(env, c)));
-  await Promise.all(SuggestionEntity.seedData.map(s => SuggestionEntity.create(env, s)));
-  await Promise.all(BillEntity.seedData.map(b => BillEntity.create(env, b)));
-  console.log("Database seeding complete.");
-  seeded = true;
-}
 export function userRoutes(app: Hono<{ Bindings: Env }>) {
-  app.use('*', async (c, next) => {
-    if (!seeded) {
-      await seedDatabase(c.env);
-    }
-    await next();
-  });
   // --- AUTHENTICATION & REGISTRATION ROUTES ---
   app.post('/api/auth/student/login', async (c) => {
     const { email, password } = await c.req.json<AuthRequest>();
@@ -200,7 +180,6 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
   app.get('/api/manager/billing-overview', async (c) => {
     const { items: students } = await StudentEntity.list(c.env);
     const { items: bills } = await BillEntity.list(c.env);
-    const settings = await new SettingsEntity(c.env).getState();
     const studentMap = new Map(students.map(s => [s.id, s]));
     const overview: { unpaid: any[], paid: any[], overdue: any[] } = { unpaid: [], paid: [], overdue: [] };
     bills.forEach(bill => {
@@ -213,7 +192,7 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
     });
     return ok(c, overview);
   });
-  app.post('/api/manager/settings', async (c) => {
+  app.put('/api/manager/settings', async (c) => {
     const newSettings = await c.req.json<MessSettings>();
     await new SettingsEntity(c.env).save(newSettings);
     return ok(c, newSettings);
