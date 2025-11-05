@@ -33,6 +33,7 @@ export type WeeklyMenu = Record<DayOfWeek, MenuItem>;
 export type BillStatus = 'Paid' | 'Due' | 'Overdue';
 export interface Bill {
   id: string;
+  studentId: string;
   month: string; // e.g., "July 2025"
   amount: number;
   status: BillStatus;
